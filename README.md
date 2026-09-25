@@ -5,7 +5,7 @@
 [![GitHub Pages](https://img.shields.io/badge/GitHub%20Pages-在线-3ddc97.svg)](https://forjiang.github.io/image-metadata-cleaner/)
 [![License: MIT](https://img.shields.io/badge/License%20MIT-d8d8ff.svg)](LICENSE)
 [![No Build](https://img.shields.io/badge/build-none-success.svg)](index.html)
-[![Tests](https://img.shields.io/badge/tests-52%20passing-3ddc97.svg)](tests/test-all.mjs)
+[![Tests](https://img.shields.io/badge/tests-65%20passing-3ddc97.svg)](tests/test-all.mjs)
 
 English intro at the bottom → [English](#-english)
 
@@ -16,17 +16,20 @@ English intro at the bottom → [English](#-english)
 | | |
 | --- | --- |
 | 🧹 **真正的物理清除** | Canvas 重编码 + 编码后强制拆段，连 Safari 编码器自行写回的 ICC 色彩配置也一并移除，输出零元数据 |
+| 🖥️ **处理日志窗口** | 终端风格实时显示执行过程：`$ open` → 扫描发现的每个元数据段 → `decode` → `encode` → `strip` → `verify` → `done`，毫秒级时间戳，✓/✗ 分级配色 |
 | 🔍 **先扫描后清除** | 入队即扫描，逐项列出将移除的内容：EXIF（相机/时间/软件）、**GPS 坐标（精确到小数点后 5 位）**、内嵌缩略图、XMP、IPTC/Photoshop、ICC、注释段、PNG 文本块、EOI 后尾部隐藏数据 |
 | 📦 **批量与打包** | 拖入任意多张图片（支持整个文件夹拖入、Ctrl/⌘+V 粘贴），单文件下载或打包 ZIP 一次带走 |
 | 🎚️ **输出可控** | JPEG 质量滑块（0.6–1.0）、保持原格式 / 全部转 JPEG / 全部转 PNG、文件名可加 `_clean` 后缀；改了选项自动重新入队 |
 | ✅ **自检闭环** | 清除后对输出再次扫描，理论上残留为 0；UI 展示每项元数据的移除清单与体积变化 |
 | 🌐 **中英双语** | 跟随系统语言，可手动切换，移动端自适应 |
 | 🔒 **隐私优先** | 无任何上传代码，断网也能用；无日志、无追踪 |
-| 🚀 **真正静态** | 无构建、无依赖安装，GitHub Pages 直接发布；自带 52 项单元测试 |
+| 🚀 **真正静态** | 无构建、无依赖安装，GitHub Pages 直接发布；自带 65 项单元测试 |
 
 ## 🖼️ 界面预览
 
-深色玻璃面板 + WebGL 液态金属背景（视觉语言对齐 [ForJiang.github.io](https://github.com/ForJiang/ForJiang.github.io)，自研 fragment shader，无第三方依赖，`prefers-reduced-motion` 下自动静止）。
+![界面预览](docs/screenshot.png)
+
+深色玻璃面板 + WebGL 正弦波线条背景（原生 WebGL1 复刻 three.js `RawShaderMaterial` 效果，零第三方依赖，`prefers-reduced-motion` 下自动静止、页面隐藏时暂停渲染）。顶栏固定 60px 高，与 [rvc-sound-clone](https://forjiang.github.io/rvc-sound-clone/) 的排版规格一致。
 
 ## 🧩 它是怎么工作的
 
@@ -45,9 +48,10 @@ English intro at the bottom → [English](#-english)
 | `assets/js/metadata-scan.js` | JPEG 段遍历 + TIFF/EXIF 解析（含 GPS DMS→十进制换算）、PNG 块解析、WebP chunk 解析 |
 | `assets/js/strip.js` | 编码后强制拆段：JPEG 去 APPn/COM/尾部、PNG 去 tEXt/zTXt/iTXt/eXIf、WebP 去 EXIF/XMP/ICCP |
 | `assets/js/zip-writer.js` | 极简 ZIP（store 模式），UTF-8 文件名 |
-| `assets/js/liquid-bg.js` | 液态金属背景（WebGL1，画质自适应降档） |
+| `assets/js/wave-bg.js` | 正弦波线条背景（原生 WebGL1，uniforms 与参考组件一致） |
+| `assets/js/log.js` | 处理日志总线（环形缓冲 + 订阅），驱动终端风格日志窗口 |
 | `assets/js/i18n.js` | 中英双语文案 |
-| `tests/test-all.mjs` | 52 项单元测试（合成带元数据的 JPEG/PNG/WebP 验证扫描与剥离，ZIP 用系统 `unzip` 与 Python `zipfile` 交叉验证） |
+| `tests/test-all.mjs` | 65 项单元测试（合成带元数据的 JPEG/PNG/WebP 验证扫描与剥离，ZIP 用系统 `unzip` 与 Python `zipfile` 交叉验证，日志总线测格式化与环形缓冲） |
 
 ## 🚀 快速开始
 
@@ -84,7 +88,7 @@ node tests/test-all.mjs   # 或 npm test
 
 - **Live**: <https://forjiang.github.io/image-metadata-cleaner/>
 - **Local**: `python3 -m http.server 8931` → open `index.html`
-- **Tests**: `node tests/test-all.mjs` (52 checks)
+- **Tests**: `node tests/test-all.mjs` (65 checks)
 
 ### How it works
 
