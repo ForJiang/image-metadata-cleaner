@@ -110,35 +110,47 @@ export function startWaveBackground(canvas) {
   let stopped = false;
   let t = 0;
 
-  function resize() {
+  // —— 稳定尺寸捕获 ——
+  // 移动端滚动时地址栏收放会持续改变视口高度。若每次都重建画布并刷新
+  // resolution uniform，波浪图案会不断重排，看起来就是“背景在滑动、卡顿”。
+  // 策略：画布只在「宽度变化」或「高度剧烈变化（>20%，如横竖屏切换）」时重建，
+  // 地址栏带来的微小高度变化由 CSS 拉伸吸收（图案锚点不变，视觉上钉在原地）。
+  let stableW = 0;
+  let stableH = 0;
+  let resizeTimer = 0;
+
+  function captureSize() {
     const cssW = Math.max(1, canvas.clientWidth || window.innerWidth);
     const cssH = Math.max(1, canvas.clientHeight || window.innerHeight);
+    const first = stableW === 0;
+    const widthChanged = Math.abs(cssW - stableW) > 2;
+    const heightJump = stableH > 0 && Math.abs(cssH - stableH) / stableH > 0.2;
+    if (!first && !widthChanged && !heightJump) return;
+
+    stableW = cssW;
+    stableH = cssH;
     const dpr = Math.min(window.devicePixelRatio || 1, DPR_CAP);
-    const w = Math.round(cssW * dpr);
-    const h = Math.round(cssH * dpr);
-    if (canvas.width !== w || canvas.height !== h) {
-      canvas.width = w;
-      canvas.height = h;
-      gl.viewport(0, 0, w, h);
-      gl.uniform2f(uRes, w, h);
-    }
+    const w = Math.max(1, Math.round(cssW * dpr));
+    const h = Math.max(1, Math.round(cssH * dpr));
+    canvas.width = w;
+    canvas.height = h;
+    gl.viewport(0, 0, w, h);
+    gl.uniform2f(uRes, w, h);
   }
 
   function draw() {
-    resize();
     gl.drawArrays(gl.TRIANGLES, 0, 3);
   }
 
   function frame() {
     if (stopped) return;
-    resize();
     t += TIME_STEP; // 与参考一致：每帧固定步进
     gl.uniform1f(uTime, t);
     draw();
     raf = requestAnimationFrame(frame);
   }
 
-  resize();
+  captureSize();
   gl.uniform1f(uTime, 0);
   draw();
 
@@ -154,16 +166,24 @@ export function startWaveBackground(canvas) {
       raf = requestAnimationFrame(frame);
     }
   };
+  // resize 防抖：地址栏收放会连发多个 resize，汇总后只判断一次
+  const onResize = () => {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(captureSize, 150);
+  };
   document.addEventListener('visibilitychange', onVisibility);
-  window.addEventListener('resize', resize);
+  window.addEventListener('resize', onResize);
+  window.addEventListener('orientationchange', onResize);
 
   return {
     ok: true,
     stop() {
       stopped = true;
       cancelAnimationFrame(raf);
+      clearTimeout(resizeTimer);
       document.removeEventListener('visibilitychange', onVisibility);
-      window.removeEventListener('resize', resize);
+      window.removeEventListener('resize', onResize);
+      window.removeEventListener('orientationchange', onResize);
     },
   };
 }

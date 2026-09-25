@@ -44,6 +44,9 @@ body {
   height: 100%;
   z-index: -1;
   display: block;
+  /* 独立合成层：移动端滚动时 fixed 元素不再随页面抖动/位移 */
+  transform: translateZ(0);
+  backface-visibility: hidden;
 }
 
 ::selection { background: rgba(255, 255, 255, 0.22); }
@@ -617,6 +620,15 @@ footer a:hover { color: var(--text); border-bottom-color: var(--line-strong); }
   .row { grid-template-columns: 44px minmax(0, 1fr); }
   .row-thumb { width: 44px; height: 44px; }
   .row-side { grid-column: 2; flex-direction: row; align-items: center; justify-content: space-between; }
+  /* 移动端降毛玻璃：动画画布之上的 backdrop-filter 是 iOS 滚动卡顿的主因，
+     降模糊半径并用更高不透明度补偿可读性 */
+  .topbar,
+  .panel,
+  .faq details,
+  .badge,
+  .toast { backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
+  .panel { background: rgba(13, 14, 18, 0.8); }
+  .faq details { background: rgba(13, 14, 18, 0.8); }
 }
 
 @media (prefers-reduced-motion: reduce) {
