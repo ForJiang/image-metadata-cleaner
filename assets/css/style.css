@@ -86,8 +86,9 @@ button, input, select { font: inherit; color: inherit; }
 .brand-logo {
   width: 34px;
   height: 34px;
-  border-radius: 10px;
   flex: none;
+  display: grid;
+  place-items: center;
 }
 
 .brand-logo svg { width: 19px; height: 19px; color: #dfe3ea; }
