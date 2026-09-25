@@ -22,7 +22,7 @@ English intro at the bottom → [English](#-english)
 | 🎚️ **输出可控** | JPEG 质量滑块（0.6–1.0）、保持原格式 / 全部转 JPEG / 全部转 PNG、文件名可加 `_clean` 后缀；改了选项自动重新入队 |
 | ✅ **自检闭环** | 清除后对输出再次扫描，理论上残留为 0；UI 展示每项元数据的移除清单与体积变化 |
 | 🌐 **中英双语** | 跟随系统语言，可手动切换，移动端自适应 |
-| 🎬 **卡片入场动画** | 主面板、日志面板、FAQ、汇总统计随滚动淡入上移；新入队的文件卡片按 45ms 错峰入场，`prefers-reduced-motion` 下自动静止 |
+| 🎬 **卡片入场动画** | 主面板、日志面板、FAQ、汇总统计随滚动淡入上移，滚动 / 缩放 / 横竖屏切换均触发；新入队的文件卡片按 45ms 错峰入场（上限 270ms），清除列表后重新入队会再次播放；`prefers-reduced-motion` 下自动静止，无 JS 时内容直接可见 |
 | 📱 **移动端稳定** | 背景画布尺寸稳定捕获（忽略地址栏收放带来的微小高度变化、resize 防抖）+ 独立合成层，滚动时背景钉住不滑不抖；毛玻璃效果按屏幕宽度降级，保证滚动流畅 |
 | 🔒 **隐私优先** | 无任何上传代码，断网也能用；无日志、无追踪 |
 | 🚀 **真正静态** | 无构建、无依赖安装，GitHub Pages 直接发布；自带 65 项单元测试 |
@@ -52,6 +52,7 @@ English intro at the bottom → [English](#-english)
 | `assets/js/zip-writer.js` | 极简 ZIP（store 模式），UTF-8 文件名 |
 | `assets/js/wave-bg.js` | 正弦波线条背景（原生 WebGL1，uniforms 与参考组件一致） |
 | `assets/js/log.js` | 处理日志总线（环形缓冲 + 订阅），驱动终端风格日志窗口 |
+| `assets/js/reveal.js` | 卡片入场动画：滚动揭示（时间戳节流 + 400ms 轮询兜底，不依赖 IntersectionObserver / rAF，个别内嵌 WebView 不派发滚动事件也能揭示；无待揭示元素即自动停） |
 | `assets/js/i18n.js` | 中英双语文案 |
 | `tests/test-all.mjs` | 65 项单元测试（合成带元数据的 JPEG/PNG/WebP 验证扫描与剥离，ZIP 用系统 `unzip` 与 Python `zipfile` 交叉验证，日志总线测格式化与环形缓冲） |
 
@@ -92,6 +93,7 @@ node tests/test-all.mjs   # 或 npm test
 - **Local**: `python3 -m http.server 8931` → open `index.html`
 - **Tests**: `node tests/test-all.mjs` (65 checks)
 - **Mobile**: responsive layout; the WebGL background stays pinned while scrolling (stable canvas sizing ignores URL-bar height changes), and blur effects degrade gracefully on small screens.
+- **Entrance animations**: the main panel, process log, FAQ and summary stats fade in as you scroll; newly queued file cards stagger in 45ms apart. Everything falls back to visible-without-JS, and `prefers-reduced-motion` keeps the page still.
 
 ### How it works
 
