@@ -218,18 +218,35 @@ async function cleanAll() {
   state.processing = false;
   updateProgress(queue.length, queue.length, true);
   updateButtons();
-  if (done) toast('toast.cleaned', { n: done });
+  if (done) {
+    const segments = queue.reduce((s, it) => s + (it.status === 'done' ? (it.meta?.items?.length || 0) : 0), 0);
+    toast('toast.cleaned', { n: done, m: segments });
+  }
 }
 
 // ---------------------------------------------------------------- 渲染
 
+/** 元数据芯片的说明文字：优先原始 detail（相机型号/GPS 坐标/keyword 等），否则退化为体积 */
+function chipDetail(m) {
+  if (m.detail) return m.detail;
+  if (m.size) return fmtBytes(m.size);
+  return '';
+}
+
 function metaChips(item) {
   const metas = item.meta?.items || [];
   if (item.status === 'done') {
+    // 已完成：逐项展示“清掉了什么”——类别 + 具体内容（相机型号、GPS 坐标、体积等）
     const kinds = [...new Set((item.meta?.items || []).map((m) => m.type))];
     if (!kinds.length) return `<span class="chip chip-ok">✓ ${t('meta.none')}</span>`;
     if (item.out?.leftover) kinds.push('leftover');
-    return kinds.map((k) => `<span class="chip chip-ok">✓ ${t(`meta.${k}`) || k}</span>`).join('');
+    return kinds
+      .map((k) => {
+        const label = t(`meta.${k}`) || k;
+        const detail = k === 'leftover' ? '' : chipDetail(metas.find((m) => m.type === k) || {});
+        return `<span class="chip chip-ok" title="${detail.replace(/"/g, '&quot;')}">✓ ${label}${detail ? ` · ${detail}` : ''}</span>`;
+      })
+      .join('');
   }
   if (!metas.length) return `<span class="chip chip-quiet">${t('meta.none')}</span>`;
   const seen = new Set();
@@ -238,7 +255,8 @@ function metaChips(item) {
     .map((m) => {
       const cls = m.type === 'exif-gps' || m.type === 'trailing' ? 'chip chip-danger' : 'chip';
       const label = t(`meta.${m.type}`) || m.type;
-      return `<span class="${cls}" title="${(m.detail || '').replace(/"/g, '&quot;')}">${label}${m.detail ? ` · ${m.detail}` : ''}</span>`;
+      const detail = chipDetail(m);
+      return `<span class="${cls}" title="${detail.replace(/"/g, '&quot;')}">${label}${detail ? ` · ${detail}` : ''}</span>`;
     })
     .join('');
 }
@@ -261,6 +279,7 @@ function rowHtml(item, index) {
         <span>${metaInfo}</span>
         ${item.status === 'error' ? `<span class="row-err">${t(item.error === 'tooLarge' ? 'error.tooLarge' : 'toast.decoded', { name: item.name })}</span>` : ''}
       </div>
+      ${item.status === 'done' && item.meta?.items?.length ? `<div class="row-removed">${t('row.removed', { n: item.meta.items.length, size: fmtBytes(item.meta.totalMetaBytes) })}</div>` : ''}
       <div class="row-chips">${metaChips(item)}</div>
     </div>
     <div class="row-side">
