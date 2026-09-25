@@ -1,14 +1,20 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
   <defs>
-    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+    <linearGradient id="tile" x1="0" y1="0" x2="1" y2="1">
       <stop offset="0" stop-color="#2a2c33"/>
       <stop offset="1" stop-color="#101114"/>
     </linearGradient>
+    <linearGradient id="ink" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset="1" stop-color="#c3c9d6"/>
+    </linearGradient>
   </defs>
-  <rect width="64" height="64" rx="14" fill="url(#bg)"/>
-  <g fill="none" stroke="#e8ebf1" stroke-width="3.4" stroke-linecap="round">
-    <path d="M32 13a19 19 0 1 0 19 19" opacity=".35"/>
-    <circle cx="32" cy="32" r="7.5"/>
-    <path d="M32 20.5v4.5M32 39v4.5M20.5 32H25M39 32h4.5M23.8 23.8 27 27M37 37l3.2 3.2M40.2 23.8 37 27M27 37l-3.2 3.2" opacity=".55"/>
+  <!-- 圆角底与 rvc-sound-clone 同一套（rx=14 + 斜向渐变）：略亮的渐变底让 16px 下圆角依然分明 -->
+  <rect x="0" y="0" width="64" height="64" rx="14" fill="url(#tile)"/>
+  <!-- 光圈图形：实心墨色，小尺寸下依然清晰可辨 -->
+  <g fill="none" stroke="url(#ink)" stroke-width="3.6" stroke-linecap="round">
+    <path d="M32 13a19 19 0 1 0 19 19" />
+    <circle cx="32" cy="32" r="7.5" />
+    <path d="M32 20.5v4.5M32 39v4.5M20.5 32H25M39 32h4.5M23.8 23.8 27 27M37 37l3.2 3.2M40.2 23.8 37 27M27 37l-3.2 3.2" stroke-width="2.6" opacity=".9" />
   </g>
 </svg>
