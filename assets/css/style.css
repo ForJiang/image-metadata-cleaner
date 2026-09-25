@@ -465,6 +465,58 @@ select option { background: #14151a; color: var(--text); }
 .stat b { font-size: 19px; font-weight: 650; font-variant-numeric: tabular-nums; }
 .stat span { font-size: 11.5px; color: var(--text-3); }
 
+/* ============ 处理日志（终端窗口） ============ */
+
+.logpanel { padding: 0; overflow: hidden; gap: 0; }
+
+.logpanel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  padding: 11px 16px;
+  border-bottom: 1px solid var(--line);
+}
+
+.logpanel-title { display: flex; align-items: center; gap: 10px; font-size: 13px; }
+.logpanel-title strong { font-weight: 600; }
+
+.log-dots { display: inline-flex; gap: 5px; }
+.log-dots i { width: 9px; height: 9px; border-radius: 50%; }
+.log-dots i:nth-child(1) { background: #ff5f57; }
+.log-dots i:nth-child(2) { background: #febc2e; }
+.log-dots i:nth-child(3) { background: #28c840; }
+
+.log-count { font-size: 11px; color: var(--text-3); font-variant-numeric: tabular-nums; }
+
+.logpanel-actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+
+.log-hint { font-size: 11.5px; color: var(--text-3); }
+
+.log-body {
+  font-family: ui-monospace, 'SF Mono', SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace;
+  font-size: 11.5px;
+  line-height: 1.75;
+  padding: 12px 16px;
+  max-height: 260px;
+  overflow-y: auto;
+  background: rgba(0, 0, 0, 0.35);
+  overscroll-behavior: contain;
+}
+
+.log-body::-webkit-scrollbar { width: 8px; }
+.log-body::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.14); border-radius: 99px; }
+
+.log-empty { margin: 0; color: var(--text-3); }
+
+.log-line { white-space: pre-wrap; overflow-wrap: anywhere; }
+.log-lv-cmd { color: #e8ebf1; }
+.log-lv-info { color: var(--text-2); }
+.log-lv-ok { color: var(--ok); }
+.log-lv-warn { color: var(--warn); }
+.log-lv-err { color: var(--danger); }
+
 /* ============ FAQ ============ */
 
 .faq { display: flex; flex-direction: column; gap: 10px; }

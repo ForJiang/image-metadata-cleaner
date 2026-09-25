@@ -128,6 +128,24 @@
     </div>
   </section>
 
+  <section class="panel logpanel" id="logPanel">
+    <div class="logpanel-head">
+      <span class="logpanel-title">
+        <span class="log-dots" aria-hidden="true"><i></i><i></i><i></i></span>
+        <strong data-i18n="log.title">处理日志</strong>
+        <span class="log-count" id="logCount">0</span>
+      </span>
+      <span class="logpanel-actions">
+        <span class="log-hint" data-i18n="log.hint">全部在浏览器内执行，照片不会离开本机。</span>
+        <button class="btn-icon" id="logClear" type="button" data-i18n="log.clear">清空</button>
+        <button class="btn-icon" id="logToggle" type="button" aria-expanded="true">收起</button>
+      </span>
+    </div>
+    <div class="log-body" id="logBody" aria-live="polite">
+      <p class="log-empty" id="logEmpty" data-i18n="log.empty">还没有处理记录，拖入图片后这里会实时显示执行过程。</p>
+    </div>
+  </section>
+
   <section class="faq">
     <h2 data-i18n="faq.title">常见问题</h2>
     <details>

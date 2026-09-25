@@ -10,6 +10,7 @@
 import { startLiquidBackground } from './liquid-bg.js';
 import { scanMetadata } from './metadata-scan.js';
 import { stripFileMeta } from './strip.js';
+import { createLogBus, formatLine } from './log.js';
 import { createZip } from './zip-writer.js';
 import { t, applyI18n, getLang, setLang, detectLang } from './i18n.js';
 
@@ -24,6 +25,9 @@ const state = {
   items: [],            // {id, file, name, base, size, status, meta, out, error, el}
   processing: false,
 };
+
+/** 处理日志总线（终端窗口的数据源） */
+const logBus = createLogBus();
 
 let seq = 0;
 
@@ -72,7 +76,7 @@ function addFiles(fileList) {
   for (const file of files) {
     if (!isAcceptable(file)) { skipped++; continue; }
     const dup = state.items.find((it) => it.file === file || (it.name === file.name && it.size === file.size));
-    if (dup) continue;
+    if (dup) { logBus.warn('skip duplicate', file.name); continue; }
 
     const item = {
       id: ++seq,
@@ -88,6 +92,7 @@ function addFiles(fileList) {
       thumbUrl: URL.createObjectURL(file),
     };
     state.items.push(item);
+    logBus.cmd('open', `${file.name} · ${fmtBytes(file.size)}`);
     void scanItem(item); // 入队即扫描，先把“将移除什么”摆出来
   }
 
@@ -101,8 +106,18 @@ async function scanItem(item) {
   try {
     const bytes = new Uint8Array(await item.file.arrayBuffer());
     item.meta = scanMetadata(bytes, item.file.type);
+    const metas = item.meta.items;
+    if (metas.length) {
+      logBus.info('scan', `${item.name} → ${item.meta.container} · ${metas.length} segments`);
+      for (const m of metas) {
+        logBus.info(`  ${m.type}`, m.detail || (m.size ? `${fmtBytes(m.size)}` : undefined));
+      }
+    } else {
+      logBus.ok('scan', `${item.name} → clean (no metadata)`);
+    }
   } catch {
     item.meta = { container: 'unknown', items: [], totalMetaBytes: 0, hasGPS: false };
+    logBus.err('scan failed', item.name);
   }
   if (item.el) renderRow(item);
   updateSummary();
@@ -168,15 +183,21 @@ async function cleanItem(item) {
   item.status = 'cleaning';
   item.error = null;
   renderRow(item);
+  logBus.cmd('clean', item.name);
   try {
     const bitmap = await decodeImage(item.file);
+    logBus.info('decode', `${bitmap.width}×${bitmap.height} · EXIF orientation baked in`);
     const wantMime = pickOutputMime(item.file.type, state.format);
     const { blob, w, h } = await encodeCanvas(bitmap, wantMime, state.quality);
+    logBus.info('encode', `${wantMime} q=${state.quality.toFixed(2)} → ${fmtBytes(blob.size)}`);
     // 个别浏览器（如 Safari）的编码器会自行写回 ICC 等段，这里二次物理拆除
     const mime = blob.type || wantMime;
     const stripped = stripFileMeta(new Uint8Array(await blob.arrayBuffer()), mime);
+    logBus.info('strip', `${fmtBytes(blob.size)} → ${fmtBytes(stripped.length)} · ${mime}`);
     const outBlob = new Blob([stripped], { type: mime });
     const afterScan = scanMetadata(stripped, mime); // 自检：应为空
+    if (afterScan.items.length) logBus.warn('verify', `${afterScan.items.length} metadata segment(s) left`);
+    else logBus.ok('verify', '0 metadata segments left');
 
     if (item.out?.url) URL.revokeObjectURL(item.out.url);
     item.out = {
@@ -190,9 +211,11 @@ async function cleanItem(item) {
       leftover: afterScan.items.length, // >0 说明还有残留（理论上为 0）
     };
     item.status = 'done';
+    logBus.ok('done', `${item.out.name} · ${fmtBytes(item.out.size)}`);
   } catch (err) {
     item.status = 'error';
     item.error = err && err.message === 'tooLarge' ? 'tooLarge' : 'decode';
+    logBus.err('failed', `${item.name} — ${item.error === 'tooLarge' ? 'canvas size limit' : 'decode error'}`);
   }
   renderRow(item);
   updateButtons();
@@ -337,6 +360,7 @@ function clearAll() {
     if (item.out?.url) URL.revokeObjectURL(item.out.url);
     if (item.thumbUrl) URL.revokeObjectURL(item.thumbUrl);
   }
+  logBus.cmd('clear', `${state.items.length} files removed from queue`);
   state.items = [];
   renderList();
   updateButtons();
@@ -425,14 +449,17 @@ async function downloadZip() {
       used.add(name);
       entries.push({ name, data: new Uint8Array(await it.out.blob.arrayBuffer()) });
     }
+    logBus.cmd('zip', `${entries.length} files`);
     const blob = await createZip(entries);
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
     a.download = `cleaned-images-${new Date().toISOString().slice(0, 10)}.zip`;
     a.click();
     setTimeout(() => URL.revokeObjectURL(a.href), 10_000);
+    logBus.ok('zip saved', `${a.download} · ${fmtBytes(blob.size)}`);
     toast('toast.zipDownloaded', { n: done.length });
   } catch {
+    logBus.err('zip failed');
     toast('toast.zipFailed');
   }
 }
@@ -532,6 +559,52 @@ function bindOptions() {
   }
 }
 
+// ---------------------------------------------------------------- 终端日志窗口
+
+function bindConsole() {
+  const body = $('#logBody');
+  const empty = $('#logEmpty');
+  const count = $('#logCount');
+  const clearBtn = $('#logClear');
+  const toggleBtn = $('#logToggle');
+  const panel = $('#logPanel');
+
+  logBus.subscribe((line, lines) => {
+    if (line) {
+      const div = document.createElement('div');
+      div.className = `log-line log-lv-${line.level}`;
+      div.textContent = formatLine(line);
+      body.appendChild(div);
+    } else {
+      body.querySelectorAll('.log-line').forEach((el) => el.remove());
+    }
+    // DOM 行数跟随环形缓冲裁剪
+    while (body.querySelectorAll('.log-line').length > lines.length) {
+      body.querySelector('.log-line')?.remove();
+    }
+    count.textContent = String(lines.length);
+    empty.hidden = lines.length > 0;
+    // 用户停在底部附近才自动滚动，方便回看历史
+    const nearBottom = body.scrollHeight - body.scrollTop - body.clientHeight < 60;
+    if (nearBottom) body.scrollTop = body.scrollHeight;
+  });
+
+  clearBtn.addEventListener('click', () => logBus.clear());
+  toggleBtn.addEventListener('click', () => {
+    const collapsed = panel.classList.toggle('collapsed');
+    body.hidden = collapsed;
+    toggleBtn.textContent = collapsed ? t('log.expand') : t('log.collapse');
+    toggleBtn.setAttribute('aria-expanded', String(!collapsed));
+  });
+  toggleBtn.textContent = t('log.collapse');
+}
+
+function refreshConsoleLabels() {
+  const panel = $('#logPanel');
+  const toggleBtn = $('#logToggle');
+  if (panel && toggleBtn) toggleBtn.textContent = panel.classList.contains('collapsed') ? t('log.expand') : t('log.collapse');
+}
+
 // ---------------------------------------------------------------- 启动
 
 function boot() {
@@ -540,6 +613,7 @@ function boot() {
   startLiquidBackground($('#liquidBg'));
   bindDropzone();
   bindOptions();
+  bindConsole();
   bindActions();
   refreshLangButton();
   updateButtons();
@@ -554,6 +628,7 @@ function bindActions() {
     applyI18n();
     renderList();
     updateButtons();
+    refreshConsoleLabels();
     refreshLangButton();
   });
 }

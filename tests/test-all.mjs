@@ -8,6 +8,7 @@ import { execSync } from 'node:child_process';
 import { scanMetadata } from '../assets/js/metadata-scan.js';
 import { createZip, crc32 } from '../assets/js/zip-writer.js';
 import { stripFileMeta } from '../assets/js/strip.js';
+import { makeLine, formatTime, formatLine, pushLine, createLogBus } from '../assets/js/log.js';
 
 let pass = 0, fail = 0;
 function ok(cond, name, extra) {
@@ -292,6 +293,44 @@ console.log('\n[7] 编码后强制剥离 strip.js');
 {
   const garbage = new Uint8Array(512).map((_, i) => i % 256);
   ok(stripFileMeta(garbage, 'image/jpeg').length === garbage.length, '畸形输入原样返回');
+}
+
+console.log('\n[8] 日志总线 log.js');
+{
+  ok(makeLine('cmd', 'open').level === 'cmd', '合法 level 保留');
+  ok(makeLine('nope', 'x').level === 'info', '非法 level 回落为 info');
+  ok(makeLine('info', 'x', '').detail === undefined, '空 detail 归一化为 undefined');
+  const fixed = new Date(2026, 8, 26, 9, 5, 3, 42).getTime();
+  ok(formatTime(fixed) === '09:05:03.042', '时间戳补零格式化', formatTime(fixed));
+  const cmd = formatLine(makeLine('cmd', 'open', 'photo.jpg · 1.6 KB', fixed));
+  ok(cmd === '[09:05:03.042] $ open · photo.jpg · 1.6 KB', 'cmd 行渲染为 $ 前缀且带 detail', cmd);
+  const okLine = formatLine(makeLine('ok', 'verify', '0 metadata segments left', fixed));
+  ok(okLine === '[09:05:03.042] ✓ verify · 0 metadata segments left', 'ok 行带 ✓ 与 detail', okLine);
+  const errLine = formatLine(makeLine('err', 'failed', 'decode error', fixed));
+  ok(errLine.startsWith('[09:05:03.042] ✗ failed · '), 'err 行带 ✗');
+  const warnLine = formatLine(makeLine('warn', 'leftover', undefined, fixed));
+  ok(warnLine.includes('! leftover'), 'warn 行带 !');
+}
+{
+  // 环形缓冲：限量后丢弃最旧
+  let lines = [];
+  for (let i = 0; i < 10; i++) lines = pushLine(lines, makeLine('info', `line-${i}`), 4);
+  ok(lines.length === 4 && lines[0].text === 'line-6' && lines[3].text === 'line-9', '环形缓冲丢弃最旧行');
+}
+{
+  const bus = createLogBus();
+  const got = [];
+  const off = bus.subscribe((line) => got.push(line));
+  bus.cmd('clean', 'a.jpg');
+  bus.ok('done', 'a.jpg · 870 B');
+  ok(got.length === 2 && bus.getLines().length === 2, '订阅者收到全部新行');
+  ok(bus.getLines()[0].level === 'cmd' && bus.getLines()[1].level === 'ok', '行级别正确');
+  bus.clear();
+  ok(bus.getLines().length === 0 && got.length === 3, 'clear 清空并通知订阅者（末次 line=null）');
+  bus.subscribe(() => { throw new Error('订阅者炸了'); });
+  bus.info('仍然可用');
+  ok(bus.getLines().length === 1, '订阅者异常不影响总线');
+  off();
 }
 
 console.log(`\n结果：${pass} 通过，${fail} 失败\n`);
