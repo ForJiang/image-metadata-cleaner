@@ -11,7 +11,7 @@ import { startWaveBackground } from './wave-bg.js';
 import { scanMetadata } from './metadata-scan.js';
 import { stripFileMeta } from './strip.js';
 import { createLogBus, formatLine } from './log.js';
-import { revealAll } from './reveal.js?v=2';
+import { revealAll } from './reveal.js?v=3';
 import { createZip } from './zip-writer.js';
 import { t, applyI18n, getLang, setLang, detectLang } from './i18n.js';
 
