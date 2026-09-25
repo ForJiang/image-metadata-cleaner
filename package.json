@@ -1,0 +1,10 @@
+{
+  "name": "image-metadata-cleaner",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "批量清除图片元数据的纯静态站点（无构建、无依赖，GitHub Pages 直接发布）",
+  "scripts": {
+    "test": "node tests/test-all.mjs"
+  }
+}

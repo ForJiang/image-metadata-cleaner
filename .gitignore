@@ -1,0 +1,11 @@
+# 系统与编辑器
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.log
+
+# 本地测试产物
+test-*.jpg
+test-*.png
+test-*.zip

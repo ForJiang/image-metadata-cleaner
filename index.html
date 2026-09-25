@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>图片元数据清除器 · 批量移除 EXIF / GPS 隐私信息</title>
+<meta name="description" content="批量清除照片中的 EXIF、GPS 定位、XMP、IPTC 等隐藏元数据。纯浏览器本地处理，照片不上传任何服务器，支持 JPEG / PNG / WebP，可打包 ZIP 下载。" />
+<meta name="keywords" content="EXIF 清除, 去除照片元数据, GPS 信息移除, 图片隐私, metadata remover, EXIF cleaner" />
+<meta name="author" content="ForJiang" />
+<meta name="theme-color" content="#05060a" />
+<meta name="color-scheme" content="dark" />
+<meta property="og:type" content="website" />
+<meta property="og:title" content="图片元数据清除器 · 批量移除 EXIF / GPS 隐私信息" />
+<meta property="og:description" content="批量抹掉照片里的相机型号、拍摄时间、GPS 定位等隐藏信息。100% 浏览器本地处理，不上传，可打包 ZIP 下载。" />
+<meta property="og:image" content="assets/icon-512.png" />
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
+<link rel="icon" href="assets/icon-192.png" type="image/png" sizes="192x192" />
+<link rel="apple-touch-icon" href="assets/icon-192.png" />
+<link rel="manifest" href="manifest.webmanifest" />
+<link rel="stylesheet" href="assets/css/style.css" />
+</head>
+<body>
+
+<canvas id="liquidBg" aria-hidden="true"></canvas>
+
+<header class="topbar">
+  <a class="brand" href="./">
+    <span class="brand-logo" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 3a9 9 0 1 0 9 9" />
+        <circle cx="12" cy="12" r="3.2" />
+        <path d="M12 4.5v3M12 16.5v3M4.5 12h3M16.5 12h3M17.5 5.5 5.5 18.5" opacity=".55" />
+      </svg>
+    </span>
+    <span class="brand-text">
+      <strong data-i18n="brand.name">图片元数据清除器</strong>
+      <small data-i18n="brand.tag">批量 · 本地 · 隐私</small>
+    </span>
+  </a>
+  <div class="topbar-actions">
+    <button class="icon-btn" id="langBtn" type="button">EN</button>
+    <a class="icon-btn" href="https://github.com/ForJiang/image-metadata-cleaner" target="_blank" rel="noreferrer" title="GitHub">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 .5A11.5 11.5 0 0 0 .5 12a11.5 11.5 0 0 0 7.86 10.92c.58.1.79-.25.79-.55v-1.94c-3.2.7-3.88-1.54-3.88-1.54-.52-1.34-1.28-1.7-1.28-1.7-1.05-.71.08-.7.08-.7 1.16.09 1.77 1.2 1.77 1.2 1.03 1.77 2.7 1.26 3.36.96.1-.75.4-1.27.73-1.56-2.55-.29-5.24-1.28-5.24-5.7 0-1.26.45-2.29 1.2-3.1-.13-.29-.52-1.46.1-3.05 0 0 .97-.31 3.18 1.18a11 11 0 0 1 5.8 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.24 2.76.12 3.05.75.81 1.2 1.84 1.2 3.1 0 4.43-2.7 5.4-5.26 5.68.42.36.79 1.07.79 2.16v3.2c0 .31.2.66.8.55A11.5 11.5 0 0 0 23.5 12A11.5 11.5 0 0 0 12 .5Z"/></svg>
+    </a>
+  </div>
+</header>
+
+<main>
+  <section class="hero">
+    <h1 data-i18n="hero.title">批量抹掉照片里的隐藏信息</h1>
+    <p data-i18n="hero.sub">相机型号、拍摄时间、GPS 定位、内嵌缩略图、修图软件痕迹——全部在浏览器里清除，照片不会上传到任何服务器。</p>
+    <div class="hero-badges">
+      <span class="badge">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v5c0 4.6-3 8.4-7 10-4-1.6-7-5.4-7-10V6z"/><path d="M9.2 12.2l2 2 3.6-3.8"/></svg>
+        <span data-i18n="hero.badge.privacy">100% 本地处理</span>
+      </span>
+      <span class="badge">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2.5"/><circle cx="12" cy="12" r="3.4"/><path d="M8.5 5l1.2-2h4.6L15.5 5"/></svg>
+        <span data-i18n="hero.badge.formats">JPEG · PNG · WebP</span>
+      </span>
+      <span class="badge">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l2.7 5.6 6.1.8-4.5 4.2 1.2 6-5.5-3-5.5 3 1.2-6L3.2 9.4l6.1-.8z"/></svg>
+        <span data-i18n="hero.badge.oss">免费 · 开源 · 无广告</span>
+      </span>
+    </div>
+  </section>
+
+  <section class="panel">
+    <div class="dropzone" id="dropzone" tabindex="0" role="button" aria-label="选择或拖入图片">
+      <span class="dz-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 16V4m0 0L8 8m4-4 4 4" />
+          <path d="M4 15v2.5A2.5 2.5 0 0 0 6.5 20h11a2.5 2.5 0 0 0 2.5-2.5V15" />
+        </svg>
+      </span>
+      <h3 data-i18n="drop.title">拖入图片，或点击选择</h3>
+      <p data-i18n="drop.sub">支持批量选择、整个文件夹拖入、Ctrl/⌘+V 粘贴</p>
+      <input type="file" id="fileInput" accept="image/jpeg,image/png,image/webp,image/bmp,image/gif,image/avif" multiple hidden />
+    </div>
+
+    <div class="options">
+      <div class="opt">
+        <label for="optQuality" data-i18n="options.quality">JPEG 质量</label>
+        <div class="opt-row">
+          <input type="range" id="optQuality" min="0.6" max="1" step="0.01" value="0.92" />
+          <output id="optQualityVal" for="optQuality">0.92</output>
+        </div>
+      </div>
+      <div class="opt">
+        <label for="optFormat" data-i18n="options.format">输出格式</label>
+        <select id="optFormat">
+          <option value="auto" data-i18n="options.format.auto">保持原格式</option>
+          <option value="image/jpeg" data-i18n="options.format.jpeg">全部转 JPEG</option>
+          <option value="image/png" data-i18n="options.format.png">全部转 PNG</option>
+        </select>
+      </div>
+      <div class="opt">
+        <label for="optSuffix" data-i18n="options.suffix">文件名</label>
+        <select id="optSuffix">
+          <option value="keep" data-i18n="options.suffix.keep">保持原名</option>
+          <option value="clean" data-i18n="options.suffix.clean">加 _clean 后缀</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="actions">
+      <button class="btn btn-primary" id="cleanBtn" type="button" data-i18n="action.clean">清除全部元数据</button>
+      <button class="btn btn-ghost" id="zipBtn" type="button" data-i18n="action.downloadAll">打包下载 ZIP</button>
+      <button class="btn btn-ghost" id="clearBtn" type="button" data-i18n="action.clear">清空列表</button>
+    </div>
+
+    <div class="progress-wrap" id="progressWrap" hidden>
+      <div class="progress"><span id="progressBar"></span></div>
+      <output id="progressText" for="progressBar"></output>
+    </div>
+
+    <div class="list-head">
+      <h2 data-i18n="list.title">队列</h2>
+      <span class="count" id="listCount"></span>
+    </div>
+    <ul class="list" id="list"></ul>
+    <p class="list-empty" id="listEmpty" data-i18n="list.empty">还没有文件——把图片拖上来，或点上方按钮选择。</p>
+
+    <div class="summary" id="summary" hidden>
+      <div class="stat"><b id="sumFiles">0</b><span data-i18n="summary.files">处理文件</span></div>
+      <div class="stat"><b id="sumMeta">0</b><span data-i18n="summary.metaRemoved">移除元数据段</span></div>
+      <div class="stat"><b id="sumSize">0</b><span data-i18n="summary.bytes">体积变化</span></div>
+    </div>
+  </section>
+
+  <section class="faq">
+    <h2 data-i18n="faq.title">常见问题</h2>
+    <details>
+      <summary><span data-i18n="faq.q1">它会改变画质吗？</span></summary>
+      <p data-i18n="faq.a1"></p>
+    </details>
+    <details>
+      <summary><span data-i18n="faq.q2">支持 HEIC（iPhone 默认格式）吗？</span></summary>
+      <p data-i18n="faq.a2"></p>
+    </details>
+    <details>
+      <summary><span data-i18n="faq.q3">为什么 PNG 清除后有时反而变大？</span></summary>
+      <p data-i18n="faq.a3"></p>
+    </details>
+    <details>
+      <summary><span data-i18n="faq.q4">照片会被上传吗？</span></summary>
+      <p data-i18n="faq.a4"></p>
+    </details>
+    <details>
+      <summary><span data-i18n="faq.q5">ICC 色彩配置也会被移除吗？</span></summary>
+      <p data-i18n="faq.a5"></p>
+    </details>
+  </section>
+</main>
+
+<footer>
+  <span data-i18n="footer.privacy">无服务器 · 无日志 · 无追踪</span>
+  <span><a href="https://github.com/ForJiang/image-metadata-cleaner" target="_blank" rel="noreferrer">GitHub</a> · <a href="https://github.com/ForJiang/image-metadata-cleaner/blob/main/LICENSE" target="_blank" rel="noreferrer">MIT License</a> · <span data-i18n="footer.made">用 HTML + Canvas 手工制作</span></span>
+</footer>
+
+<div class="toasts" id="toasts" aria-live="polite"></div>
+
+<noscript>
+  <div style="text-align:center;padding:24px;color:#f2f3f6">本工具需要在浏览器中启用 JavaScript。</div>
+</noscript>
+
+<script type="module" src="assets/js/app.js"></script>
+</body>
+</html>

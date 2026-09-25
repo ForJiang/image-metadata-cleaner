@@ -1,0 +1,16 @@
+{
+  "name": "图片元数据清除器",
+  "short_name": "元数据清除",
+  "description": "批量清除照片中的 EXIF、GPS 定位等隐藏元数据，纯浏览器本地处理，照片不上传。",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#0a0a0c",
+  "theme_color": "#05060a",
+  "lang": "zh-CN",
+  "icons": [
+    { "src": "assets/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "assets/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "assets/favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ]
+}
