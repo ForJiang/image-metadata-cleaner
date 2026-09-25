@@ -2,6 +2,7 @@
 
 :root {
   --bg: #0a0a0c;
+  --topbar-h: 60px; /* 与 rvc-sound-clone 顶栏同一高度 */
   --glass: rgba(13, 14, 18, 0.62);
   --glass-strong: rgba(16, 17, 22, 0.82);
   --line: rgba(255, 255, 255, 0.09);
@@ -27,6 +28,7 @@ html, body { margin: 0; padding: 0; }
 
 body {
   min-height: 100vh;
+  padding-top: var(--topbar-h); /* fixed 顶栏高度补偿 */
   background: var(--bg);
   color: var(--text);
   font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'PingFang SC', 'Helvetica Neue', 'Segoe UI', Roboto, sans-serif;
@@ -59,14 +61,14 @@ button, input, select { font: inherit; color: inherit; }
 /* ============ 顶栏 ============ */
 
 .topbar {
-  position: sticky;
-  top: 0;
+  position: fixed;
+  top: 0; left: 0; right: 0;
   z-index: 20;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 12px clamp(16px, 4vw, 40px);
+  gap: 14px;
+  height: var(--topbar-h);
+  padding: 0 24px;
   background: rgba(10, 10, 12, 0.55);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
@@ -76,7 +78,7 @@ button, input, select { font: inherit; color: inherit; }
 .brand {
   display: flex;
   align-items: center;
-  gap: 11px;
+  gap: 10px;
   text-decoration: none;
   min-width: 0;
 }
@@ -85,20 +87,16 @@ button, input, select { font: inherit; color: inherit; }
   width: 34px;
   height: 34px;
   border-radius: 10px;
-  background: linear-gradient(150deg, #2a2c33, #101114);
-  border: 1px solid var(--line-strong);
-  display: grid;
-  place-items: center;
   flex: none;
 }
 
 .brand-logo svg { width: 19px; height: 19px; color: #dfe3ea; }
 
 .brand-text { display: flex; flex-direction: column; line-height: 1.25; min-width: 0; }
-.brand-text strong { font-size: 15px; letter-spacing: 0.2px; }
-.brand-text small { font-size: 11.5px; color: var(--text-3); }
+.brand-text strong { font-size: 15px; font-weight: 650; letter-spacing: 0.2px; }
+.brand-text small { font-size: 11px; color: var(--text-3); }
 
-.topbar-actions { display: flex; align-items: center; gap: 8px; }
+.topbar-actions { margin-left: auto; display: flex; align-items: center; gap: 8px; }
 
 .icon-btn {
   display: inline-grid;
