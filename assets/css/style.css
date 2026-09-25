@@ -83,16 +83,6 @@ button, input, select { font: inherit; color: inherit; }
   min-width: 0;
 }
 
-.brand-logo {
-  width: 34px;
-  height: 34px;
-  flex: none;
-  display: grid;
-  place-items: center;
-}
-
-.brand-logo svg { width: 19px; height: 19px; color: #dfe3ea; }
-
 .brand-text { display: flex; flex-direction: column; line-height: 1.25; min-width: 0; }
 .brand-text strong { font-size: 15px; font-weight: 650; letter-spacing: 0.2px; }
 .brand-text small { font-size: 11px; color: var(--text-3); }
