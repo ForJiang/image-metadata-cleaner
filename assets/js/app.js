@@ -7,7 +7,7 @@
  * 全部在浏览器内完成，没有任何网络请求。
  */
 
-import { startLiquidBackground } from './liquid-bg.js';
+import { startWaveBackground } from './wave-bg.js';
 import { scanMetadata } from './metadata-scan.js';
 import { stripFileMeta } from './strip.js';
 import { createLogBus, formatLine } from './log.js';
@@ -610,7 +610,7 @@ function refreshConsoleLabels() {
 function boot() {
   setLang(detectLang());
   applyI18n();
-  startLiquidBackground($('#liquidBg'));
+  startWaveBackground($('#bgCanvas'));
   bindDropzone();
   bindOptions();
   bindConsole();

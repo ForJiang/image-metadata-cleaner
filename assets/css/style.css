@@ -37,7 +37,7 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-#liquidBg {
+#bgCanvas {
   position: fixed;
   inset: 0;
   width: 100%;
