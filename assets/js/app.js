@@ -11,6 +11,7 @@ import { startWaveBackground } from './wave-bg.js';
 import { scanMetadata } from './metadata-scan.js';
 import { stripFileMeta } from './strip.js';
 import { createLogBus, formatLine } from './log.js';
+import { revealAll } from './reveal.js?v=2';
 import { createZip } from './zip-writer.js';
 import { t, applyI18n, getLang, setLang, detectLang } from './i18n.js';
 
@@ -320,6 +321,9 @@ function renderRow(item) {
   item.el.innerHTML = rowHtml(item);
 }
 
+/** 已播过入场动画的 item id——重新渲染时不再重放 */
+const revealed = new Set();
+
 function renderList() {
   const list = $('#list');
   list.innerHTML = '';
@@ -327,11 +331,17 @@ function renderList() {
     const li = document.createElement('li');
     li.className = 'row';
     li.innerHTML = rowHtml(item, i);
+    if (!revealed.has(item.id)) {
+      revealed.add(item.id);
+      li.setAttribute('data-reveal', '');
+      li.style.transitionDelay = `${Math.min(i * 45, 270)}ms`; // 错峰入场，最多 270ms
+    }
     item.el = li;
     list.appendChild(li);
   });
   $('#listEmpty').hidden = state.items.length > 0;
   $('#listCount').textContent = state.items.length ? String(state.items.length) : '';
+  revealAll(list); // 观察新入队的行
   updateSummary();
 }
 
@@ -362,6 +372,7 @@ function clearAll() {
   }
   logBus.cmd('clear', `${state.items.length} files removed from queue`);
   state.items = [];
+  revealed.clear();
   renderList();
   updateButtons();
   toast('toast.cleared');
@@ -432,6 +443,7 @@ function updateSummary() {
   $('#sumMeta').textContent = String(metas);
   $('#sumSize').textContent = fmtSigned(after - before);
   box.hidden = false;
+  revealAll(box); // 汇总卡出现时入场
 }
 
 // ---------------------------------------------------------------- 下载
@@ -617,6 +629,7 @@ function boot() {
   bindActions();
   refreshLangButton();
   updateButtons();
+  revealAll(); // 扫描页面内所有卡片的入场动画
 }
 
 function bindActions() {

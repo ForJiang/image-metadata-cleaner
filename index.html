@@ -9,6 +9,7 @@
 <meta name="author" content="ForJiang" />
 <meta name="theme-color" content="#05060a" />
 <meta name="color-scheme" content="dark" />
+<script>document.documentElement.classList.add('js')</script><!-- 入场动画前置标记：无 JS 时内容保持可见，不至于白屏 -->
 <meta property="og:type" content="website" />
 <meta property="og:title" content="图片元数据清除器 · 批量移除 EXIF / GPS 隐私信息" />
 <meta property="og:description" content="批量抹掉照片里的相机型号、拍摄时间、GPS 定位等隐藏信息。100% 浏览器本地处理，不上传，可打包 ZIP 下载。" />
@@ -20,7 +21,7 @@
 <link rel="icon" type="image/png" href="assets/icon-16.png" sizes="16x16" />
 <link rel="apple-touch-icon" href="assets/icon-180.png" />
 <link rel="manifest" href="manifest.webmanifest" />
-<link rel="stylesheet" href="assets/css/style.css?v=6" />
+<link rel="stylesheet" href="assets/css/style.css?v=7" />
 </head>
 <body>
 
@@ -61,7 +62,7 @@
     </div>
   </section>
 
-  <section class="panel">
+  <section class="panel" data-reveal>
     <div class="dropzone" id="dropzone" tabindex="0" role="button" aria-label="选择或拖入图片">
       <span class="dz-icon" aria-hidden="true">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
@@ -118,13 +119,13 @@
     <p class="list-empty" id="listEmpty" data-i18n="list.empty">还没有文件——把图片拖上来，或点上方按钮选择。</p>
 
     <div class="summary" id="summary" hidden>
-      <div class="stat"><b id="sumFiles">0</b><span data-i18n="summary.files">处理文件</span></div>
-      <div class="stat"><b id="sumMeta">0</b><span data-i18n="summary.metaRemoved">移除元数据段</span></div>
-      <div class="stat"><b id="sumSize">0</b><span data-i18n="summary.bytes">体积变化</span></div>
+      <div class="stat" data-reveal><b id="sumFiles">0</b><span data-i18n="summary.files">处理文件</span></div>
+      <div class="stat" data-reveal><b id="sumMeta">0</b><span data-i18n="summary.metaRemoved">移除元数据段</span></div>
+      <div class="stat" data-reveal><b id="sumSize">0</b><span data-i18n="summary.bytes">体积变化</span></div>
     </div>
   </section>
 
-  <section class="panel logpanel" id="logPanel">
+  <section class="panel logpanel" id="logPanel" data-reveal>
     <div class="logpanel-head">
       <span class="logpanel-title">
         <span class="log-dots" aria-hidden="true"><i></i><i></i><i></i></span>
@@ -142,25 +143,25 @@
     </div>
   </section>
 
-  <section class="faq">
+  <section class="faq" data-reveal>
     <h2 data-i18n="faq.title">常见问题</h2>
-    <details>
+    <details data-reveal>
       <summary><span data-i18n="faq.q1">它会改变画质吗？</span></summary>
       <p data-i18n="faq.a1"></p>
     </details>
-    <details>
+    <details data-reveal>
       <summary><span data-i18n="faq.q2">支持 HEIC（iPhone 默认格式）吗？</span></summary>
       <p data-i18n="faq.a2"></p>
     </details>
-    <details>
+    <details data-reveal>
       <summary><span data-i18n="faq.q3">为什么 PNG 清除后有时反而变大？</span></summary>
       <p data-i18n="faq.a3"></p>
     </details>
-    <details>
+    <details data-reveal>
       <summary><span data-i18n="faq.q4">照片会被上传吗？</span></summary>
       <p data-i18n="faq.a4"></p>
     </details>
-    <details>
+    <details data-reveal>
       <summary><span data-i18n="faq.q5">ICC 色彩配置也会被移除吗？</span></summary>
       <p data-i18n="faq.a5"></p>
     </details>
@@ -178,6 +179,6 @@
   <div style="text-align:center;padding:24px;color:#f2f3f6">本工具需要在浏览器中启用 JavaScript。</div>
 </noscript>
 
-<script type="module" src="assets/js/app.js"></script>
+<script type="module" src="assets/js/app.js?v=1"></script>
 </body>
 </html>

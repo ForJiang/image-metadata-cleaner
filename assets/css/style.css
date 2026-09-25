@@ -457,6 +457,26 @@ select option { background: #14151a; color: var(--text); }
 .stat b { font-size: 19px; font-weight: 650; font-variant-numeric: tabular-nums; }
 .stat span { font-size: 11.5px; color: var(--text-3); }
 
+/* ============ 卡片入场动画 ============ */
+
+/* 仅在 JS 可用时隐藏初始态，保证无脚本时内容直接可见 */
+.js [data-reveal] {
+  opacity: 0;
+  transform: translateY(18px);
+  transition: opacity 0.55s cubic-bezier(0.22, 0.61, 0.36, 1), transform 0.55s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+.js [data-reveal].in {
+  opacity: 1;
+  transform: none;
+}
+
+/* FAQ 卡片依次入场 */
+.faq details:nth-of-type(2) { transition-delay: 70ms; }
+.faq details:nth-of-type(3) { transition-delay: 140ms; }
+.faq details:nth-of-type(4) { transition-delay: 210ms; }
+.faq details:nth-of-type(5) { transition-delay: 280ms; }
+
 /* ============ 处理日志（终端窗口） ============ */
 
 .logpanel { padding: 0; overflow: hidden; gap: 0; }
