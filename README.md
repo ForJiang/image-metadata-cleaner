@@ -5,7 +5,7 @@
 [![GitHub Pages](https://img.shields.io/badge/GitHub%20Pages-在线-3ddc97.svg)](https://forjiang.github.io/image-metadata-cleaner/)
 [![License: MIT](https://img.shields.io/badge/License%20MIT-d8d8ff.svg)](LICENSE)
 [![No Build](https://img.shields.io/badge/build-none-success.svg)](index.html)
-[![Tests](https://img.shields.io/badge/tests-65%20passing-3ddc97.svg)](tests/test-all.mjs)
+[![Tests](https://img.shields.io/badge/tests-69%20passing-3ddc97.svg)](tests/test-all.mjs)
 
 English intro at the bottom → [English](#-english)
 
@@ -22,16 +22,16 @@ English intro at the bottom → [English](#-english)
 | 🎚️ **输出可控** | JPEG 质量滑块（0.6–1.0）、保持原格式 / 全部转 JPEG / 全部转 PNG、文件名可加 `_clean` 后缀；改了选项自动重新入队 |
 | ✅ **自检闭环** | 清除后对输出再次扫描，理论上残留为 0；UI 展示每项元数据的移除清单与体积变化 |
 | 🌐 **中英双语** | 跟随系统语言，可手动切换，移动端自适应 |
-| 🎬 **卡片入场动画** | 主面板、日志面板、FAQ、汇总统计随滚动淡入上移，滚动 / 缩放 / 横竖屏切换均触发；新入队的文件卡片按 45ms 错峰入场（上限 270ms），清除列表后重新入队会再次播放；`prefers-reduced-motion` 下自动静止，无 JS 时内容直接可见 |
+| 🎬 **卡片入场动画** | 主面板、日志面板、FAQ、汇总统计随滚动淡入上移，滚动 / 缩放 / 横竖屏切换均触发；新入队的文件卡片按 45ms 错峰入场（上限 270ms），清除列表后重新入队会再次播放；全程只动 opacity/transform 并提升独立合成层，文字锐利不掉帧；`prefers-reduced-motion` 下自动静止，无 JS 时内容直接可见 |
 | 📱 **移动端稳定** | 背景画布尺寸稳定捕获（忽略地址栏收放带来的微小高度变化、resize 防抖）+ 独立合成层，滚动时背景钉住不滑不抖；毛玻璃效果按屏幕宽度降级，保证滚动流畅 |
 | 🔒 **隐私优先** | 无任何上传代码，断网也能用；无日志、无追踪 |
-| 🚀 **真正静态** | 无构建、无依赖安装，GitHub Pages 直接发布；自带 65 项单元测试 |
+| 🚀 **真正静态** | 无构建、无依赖安装，GitHub Pages 直接发布；自带 69 项单元测试 |
 
 ## 🖼️ 界面预览
 
 ![界面预览](docs/screenshot.png)
 
-深色玻璃面板 + WebGL 正弦波线条背景（原生 WebGL1 复刻 three.js `RawShaderMaterial` 效果，零第三方依赖，`prefers-reduced-motion` 下自动静止、页面隐藏时暂停渲染；移动端滚动时背景稳定，不随地址栏收放重排）。顶栏固定 60px 高，与 [rvc-sound-clone](https://forjiang.github.io/rvc-sound-clone/) 的排版规格一致。
+深色玻璃面板 + WebGL 正弦波线条背景（原生 WebGL1 复刻 three.js `RawShaderMaterial` 效果，零第三方依赖，绘制缓冲按设备像素比渲染——retina 屏上亮线原生逐像素、边缘锐利，实测帧时间不达标时自动降到 1.5 档但绝不变糊；`prefers-reduced-motion` 下自动静止、页面隐藏时暂停渲染；移动端滚动时背景稳定，不随地址栏收放重排）。顶栏固定 60px 高，与 [rvc-sound-clone](https://forjiang.github.io/rvc-sound-clone/) 的排版规格一致。
 
 ## 🧩 它是怎么工作的
 
@@ -50,11 +50,11 @@ English intro at the bottom → [English](#-english)
 | `assets/js/metadata-scan.js` | JPEG 段遍历 + TIFF/EXIF 解析（含 GPS DMS→十进制换算）、PNG 块解析、WebP chunk 解析 |
 | `assets/js/strip.js` | 编码后强制拆段：JPEG 去 APPn/COM/尾部、PNG 去 tEXt/zTXt/iTXt/eXIf、WebP 去 EXIF/XMP/ICCP |
 | `assets/js/zip-writer.js` | 极简 ZIP（store 模式），UTF-8 文件名 |
-| `assets/js/wave-bg.js` | 正弦波线条背景（原生 WebGL1，uniforms 与参考组件一致） |
+| `assets/js/wave-bg.js` | 正弦波线条背景（原生 WebGL1，uniforms 与参考组件一致；按设备像素比渲染，实测帧时间不达标自动降档，视口延迟建立时有重捕兜底） |
 | `assets/js/log.js` | 处理日志总线（环形缓冲 + 订阅），驱动终端风格日志窗口 |
 | `assets/js/reveal.js` | 卡片入场动画：滚动揭示（时间戳节流 + 400ms 轮询兜底，不依赖 IntersectionObserver / rAF，个别内嵌 WebView 不派发滚动事件也能揭示；无待揭示元素即自动停） |
 | `assets/js/i18n.js` | 中英双语文案 |
-| `tests/test-all.mjs` | 65 项单元测试（合成带元数据的 JPEG/PNG/WebP 验证扫描与剥离，ZIP 用系统 `unzip` 与 Python `zipfile` 交叉验证，日志总线测格式化与环形缓冲） |
+| `tests/test-all.mjs` | 69 项单元测试（合成带元数据的 JPEG/PNG/WebP 验证扫描与剥离，ZIP 用系统 `unzip` 与 Python `zipfile` 交叉验证，日志总线测格式化与环形缓冲，背景渲染倍率选择测试） |
 
 ## 🚀 快速开始
 
@@ -91,9 +91,10 @@ node tests/test-all.mjs   # 或 npm test
 
 - **Live**: <https://forjiang.github.io/image-metadata-cleaner/>
 - **Local**: `python3 -m http.server 8931` → open `index.html`
-- **Tests**: `node tests/test-all.mjs` (65 checks)
+- **Tests**: `node tests/test-all.mjs` (69 checks)
 - **Mobile**: responsive layout; the WebGL background stays pinned while scrolling (stable canvas sizing ignores URL-bar height changes), and blur effects degrade gracefully on small screens.
-- **Entrance animations**: the main panel, process log, FAQ and summary stats fade in as you scroll; newly queued file cards stagger in 45ms apart. Everything falls back to visible-without-JS, and `prefers-reduced-motion` keeps the page still.
+- **Entrance animations**: the main panel, process log, FAQ and summary stats fade in as you scroll; newly queued file cards stagger in 45ms apart. Only opacity/transform are animated, on their own composited layers, so text stays sharp mid-flight. Everything falls back to visible-without-JS, and `prefers-reduced-motion` keeps the page still.
+- **Rendering**: the WebGL background draws at native device resolution (capped at 2×), stepping down to 1.5× only if measured frame time exceeds budget — never softer than a plain 1.5× render, just sharper on retina screens.
 
 ### How it works
 
