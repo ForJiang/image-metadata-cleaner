@@ -9,6 +9,7 @@ import { scanMetadata } from '../assets/js/metadata-scan.js';
 import { createZip, crc32 } from '../assets/js/zip-writer.js';
 import { stripFileMeta } from '../assets/js/strip.js';
 import { makeLine, formatTime, formatLine, pushLine, createLogBus } from '../assets/js/log.js';
+import { pickScaleTier } from '../assets/js/wave-bg.js';
 
 let pass = 0, fail = 0;
 function ok(cond, name, extra) {
@@ -331,6 +332,16 @@ console.log('\n[8] 日志总线 log.js');
   bus.info('仍然可用');
   ok(bus.getLines().length === 1, '订阅者异常不影响总线');
   off();
+}
+
+// ---------------------------------------------------------------- 背景渲染倍率
+{
+  // 帧预算内 → 2 档（retina 原生，边缘不发虚）
+  ok(pickScaleTier(10, 14) === 2, '帧时间达标选 2 档');
+  ok(pickScaleTier(16, 20) === 2, '临界值 17.5ms 内仍选 2 档');
+  // 超标 → 退到 1.5 兜底档，绝不低于旧版清晰度
+  ok(pickScaleTier(20, 30) === 1.5, '帧时间超标退到 1.5 档');
+  ok(pickScaleTier(120, 240) === 1.5, '极端卡顿也只退到 1.5（不会更糊）');
 }
 
 console.log(`\n结果：${pass} 通过，${fail} 失败\n`);

@@ -464,6 +464,8 @@ select option { background: #14151a; color: var(--text); }
   opacity: 0;
   transform: translateY(18px);
   transition: opacity 0.55s cubic-bezier(0.22, 0.61, 0.36, 1), transform 0.55s cubic-bezier(0.22, 0.61, 0.36, 1);
+  /* 独立提升层：动画期间文字按设备像素光栅，不会逐帧重绘发虚 */
+  will-change: opacity, transform;
 }
 
 .js [data-reveal].in {

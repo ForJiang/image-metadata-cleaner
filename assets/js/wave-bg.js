@@ -10,6 +10,11 @@
  * 1. resolution 用绘制缓冲像素而非 CSS 像素——参考混合了两套坐标系，
  *    在 retina 屏上图案会偏移；
  * 2. 页面隐藏时暂停渲染、prefers-reduced-motion 只画一帧静态画面。
+ *
+ * 清晰度：绘制缓冲按设备像素比渲染（上限 2 档，即 retina 原生分辨率），
+ * 亮线边缘不再被浏览器拉伸发虚；弱设备实测帧时间不达标时退到 1.5 档
+ * ——与旧版持平，绝不更糊。shader 图案按 min(分辨率) 归一化，换倍率
+ * 只改变锐度、不改变画面。
  */
 
 const VERT = `
@@ -42,8 +47,19 @@ void main() {
 }
 `;
 
-const DPR_CAP = 1.5;
+const DPR_CAP = 2;          // retina 原生分辨率：缓冲与设备像素 1:1，线条边缘不发虚
+const SCALE_FLOOR = 1.5;    // 兜底档：与旧版上限持平，任何设备都不会比原来更糊
+const TARGET_FRAME_MS = 17.5; // ≈57fps 的帧预算
 const TIME_STEP = 0.01; // 与参考一致：每帧步进（非按时间）
+
+/**
+ * 依据实测帧时间挑渲染倍率（纯函数，便于单测）。
+ * 2 档不达标就退到兜底档；绝不低于 SCALE_FLOOR——清晰度只升不降。
+ */
+export function pickScaleTier(avgMs, p95Ms) {
+  const worst = Math.max(avgMs, p95Ms * 0.7);
+  return worst <= TARGET_FRAME_MS ? DPR_CAP : SCALE_FLOOR;
+}
 
 function createGL(canvas) {
   const opts = { antialias: false, alpha: false, depth: false, stencil: false, powerPreference: 'high-performance' };
@@ -112,26 +128,32 @@ export function startWaveBackground(canvas) {
 
   // —— 稳定尺寸捕获 ——
   // 移动端滚动时地址栏收放会持续改变视口高度。若每次都重建画布并刷新
-  // resolution uniform，波浪图案会不断重排，看起来就是“背景在滑动、卡顿”。
-  // 策略：画布只在「宽度变化」或「高度剧烈变化（>20%，如横竖屏切换）」时重建，
+  // resolution uniform，波浪图案会不断重排，看起来就是”背景在滑动、卡顿”。
+  // 策略：画布只在「宽度变化」「高度剧烈变化（>20%，如横竖屏切换）」
+  // 「设备像素比变化（缩放/切换显示器）」或 tuner 强制时重建，
   // 地址栏带来的微小高度变化由 CSS 拉伸吸收（图案锚点不变，视觉上钉在原地）。
   let stableW = 0;
   let stableH = 0;
+  let lastDpr = 0;
   let resizeTimer = 0;
+  let renderScale = DPR_CAP; // 实测不达标时由 tuner 降到 SCALE_FLOOR
 
-  function captureSize() {
+  function captureSize(force = false) {
     const cssW = Math.max(1, canvas.clientWidth || window.innerWidth);
     const cssH = Math.max(1, canvas.clientHeight || window.innerHeight);
+    const dpr = window.devicePixelRatio || 1;
     const first = stableW === 0;
     const widthChanged = Math.abs(cssW - stableW) > 2;
     const heightJump = stableH > 0 && Math.abs(cssH - stableH) / stableH > 0.2;
-    if (!first && !widthChanged && !heightJump) return;
+    const dprChanged = lastDpr !== 0 && dpr !== lastDpr;
+    if (!first && !widthChanged && !heightJump && !dprChanged && !force) return;
 
     stableW = cssW;
     stableH = cssH;
-    const dpr = Math.min(window.devicePixelRatio || 1, DPR_CAP);
-    const w = Math.max(1, Math.round(cssW * dpr));
-    const h = Math.max(1, Math.round(cssH * dpr));
+    lastDpr = dpr;
+    const scale = Math.min(dpr, renderScale);
+    const w = Math.max(1, Math.round(cssW * scale));
+    const h = Math.max(1, Math.round(cssH * scale));
     canvas.width = w;
     canvas.height = h;
     gl.viewport(0, 0, w, h);
@@ -150,6 +172,44 @@ export function startWaveBackground(canvas) {
     raf = requestAnimationFrame(frame);
   }
 
+  /** 采样约 1.5 秒帧时间：返回 { avg, p95 } */
+  function measureFrameTime() {
+    return new Promise((resolve) => {
+      const deltas = [];
+      let last = performance.now();
+      const tick = (now) => {
+        deltas.push(now - last);
+        last = now;
+        if (deltas.length <= 90) requestAnimationFrame(tick);
+        else {
+          deltas.sort((a, b) => a - b);
+          const avg = deltas.reduce((s, d) => s + d, 0) / deltas.length;
+          const p95 = deltas[Math.floor(deltas.length * 0.95)];
+          resolve({ avg, p95 });
+        }
+      };
+      requestAnimationFrame(tick);
+    });
+  }
+
+  /**
+   * 清晰度自适应。仅当 2 档真实生效（dpr > 1.5）时才值得测——dpr≤1.5 时
+   * min(dpr, scale) 至多 1.5，测了也无档可降。rAF 不回调的环境（个别内嵌
+   * WebView）采样永远不 resolve， tuner 静默停住，不影响已经跑起来的渲染。
+   */
+  async function tuneRenderScale() {
+    if ((window.devicePixelRatio || 1) <= SCALE_FLOOR) return;
+    await new Promise((r) => setTimeout(r, 900));
+    if (stopped) return;
+    const { avg, p95 } = await measureFrameTime();
+    if (stopped) return;
+    const next = pickScaleTier(avg, p95);
+    if (next !== renderScale) {
+      renderScale = next;
+      captureSize(true);
+    }
+  }
+
   captureSize();
   gl.uniform1f(uTime, 0);
   draw();
@@ -157,6 +217,7 @@ export function startWaveBackground(canvas) {
   if (reduced) return { ok: true, stop() { stopped = true; } };
 
   raf = requestAnimationFrame(frame);
+  tuneRenderScale(); // 起步 2 档，实测帧时间不达标自动退到 1.5 档
 
   const onVisibility = () => {
     if (document.hidden) {

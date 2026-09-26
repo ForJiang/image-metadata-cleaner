@@ -7,7 +7,7 @@
  * 全部在浏览器内完成，没有任何网络请求。
  */
 
-import { startWaveBackground } from './wave-bg.js';
+import { startWaveBackground } from './wave-bg.js?v=2';
 import { scanMetadata } from './metadata-scan.js';
 import { stripFileMeta } from './strip.js';
 import { createLogBus, formatLine } from './log.js';
@@ -36,6 +36,28 @@ let seq = 0;
 
 const $ = (sel) => document.querySelector(sel);
 
+/** 热路径 DOM 引用缓存：渲染/更新都在循环里跑，避免反复 querySelector */
+const dom = {
+  list: $('#list'),
+  listEmpty: $('#listEmpty'),
+  listCount: $('#listCount'),
+  summary: $('#summary'),
+  sumFiles: $('#sumFiles'),
+  sumMeta: $('#sumMeta'),
+  sumSize: $('#sumSize'),
+  cleanBtn: $('#cleanBtn'),
+  zipBtn: $('#zipBtn'),
+  clearBtn: $('#clearBtn'),
+  toasts: $('#toasts'),
+  progressWrap: $('#progressWrap'),
+  progressBar: $('#progressBar'),
+  progressText: $('#progressText'),
+  logBody: $('#logBody'),
+  logEmpty: $('#logEmpty'),
+  logCount: $('#logCount'),
+  bgCanvas: $('#bgCanvas'),
+};
+
 function fmtBytes(n) {
   if (n === undefined || n === null) return '-';
   if (n < 1024) return `${n} B`;
@@ -49,7 +71,7 @@ function fmtSigned(n) {
 }
 
 function toast(key, vars) {
-  const box = $('#toasts');
+  const box = dom.toasts;
   const el = document.createElement('div');
   el.className = 'toast';
   el.textContent = t(key, vars);
@@ -73,12 +95,13 @@ function addFiles(fileList) {
   const files = Array.from(fileList || []);
   if (!files.length) return;
   let skipped = 0;
+  const seen = new Set(state.items.map((it) => `${it.name}:${it.size}`)); // 重拖同一文件直接跳过
 
   for (const file of files) {
     if (!isAcceptable(file)) { skipped++; continue; }
-    const dup = state.items.find((it) => it.file === file || (it.name === file.name && it.size === file.size));
-    if (dup) { logBus.warn('skip duplicate', file.name); continue; }
-
+    const key = `${file.name}:${file.size}`;
+    if (seen.has(key)) { logBus.warn('skip duplicate', file.name); continue; }
+    seen.add(key);
     const item = {
       id: ++seq,
       file,
@@ -232,12 +255,12 @@ async function cleanAll() {
   state.processing = true;
   updateButtons();
   let done = 0;
-  for (const item of queue) {
+  for (let idx = 0; idx < queue.length; idx++) {
     // 让出主线程，保持进度条和按钮的响应
     await new Promise((r) => setTimeout(r, 0));
-    await cleanItem(item);
-    if (item.status === 'done') done++;
-    updateProgress(++done, queue.length);
+    await cleanItem(queue[idx]);
+    if (queue[idx].status === 'done') done++;
+    updateProgress(idx + 1, queue.length); // 进度按已处理数走，done 只数成功清掉的
   }
   state.processing = false;
   updateProgress(queue.length, queue.length, true);
@@ -292,7 +315,7 @@ function statusLabel(item) {
   return t('status.queued');
 }
 
-function rowHtml(item, index) {
+function rowHtml(item) {
   const dims = item.out ? `${item.out.w}×${item.out.h}` : '';
   const metaInfo = dims ? `${fmtBytes(item.size)} → ${fmtBytes(item.out.size)}（${dims}）` : fmtBytes(item.size);
   return `
@@ -318,35 +341,55 @@ function rowHtml(item, index) {
 
 function renderRow(item) {
   if (!item.el) return;
+  // 已解码成功的缩略图跨渲染保留：innerHTML 重建会换掉 <img> 触发重新解码
+  const oldThumb = item.el.querySelector('.row-thumb');
+  const keepThumb = !!oldThumb && oldThumb.complete && oldThumb.naturalWidth > 0;
   item.el.innerHTML = rowHtml(item);
+  if (keepThumb) {
+    const fresh = item.el.querySelector('.row-thumb');
+    if (fresh && fresh.getAttribute('src') === oldThumb.getAttribute('src')) fresh.replaceWith(oldThumb);
+  }
 }
 
 /** 已播过入场动画的 item id——重新渲染时不再重放 */
 const revealed = new Set();
 
 function renderList() {
-  const list = $('#list');
-  list.innerHTML = '';
+  const list = dom.list;
+  // 增量渲染：行与 item 绑定，内容变了只刷 innerHTML，不再整列表重建
+  // （旧版每次 renderList 都 innerHTML=''，缩略图 <img> 会反复解码）
+  const keep = new Set(state.items.map((it) => it.el).filter(Boolean));
+  for (const child of [...list.children]) {
+    if (!keep.has(child)) child.remove(); // 清掉已非队列成员的旧行
+  }
   state.items.forEach((item, i) => {
+    const existing = item.el;
+    if (existing && existing.parentNode === list) {
+      renderRow(item);
+      if (list.children[i] !== existing) list.insertBefore(existing, list.children[i] || null);
+      return;
+    }
     const li = document.createElement('li');
     li.className = 'row';
-    li.innerHTML = rowHtml(item, i);
+    li.innerHTML = rowHtml(item);
     if (!revealed.has(item.id)) {
       revealed.add(item.id);
       li.setAttribute('data-reveal', '');
       li.style.transitionDelay = `${Math.min(i * 45, 270)}ms`; // 错峰入场，最多 270ms
+      // 动画播完即释放提升层：队列行数不固定，长期挂着会白占内存
+      li.addEventListener('transitionend', () => { li.style.willChange = 'auto'; }, { once: true });
     }
     item.el = li;
     list.appendChild(li);
   });
-  $('#listEmpty').hidden = state.items.length > 0;
-  $('#listCount').textContent = state.items.length ? String(state.items.length) : '';
+  dom.listEmpty.hidden = state.items.length > 0;
+  dom.listCount.textContent = state.items.length ? String(state.items.length) : '';
   revealAll(list); // 观察新入队的行
   updateSummary();
 }
 
 /** 列表事件（下载/重试/移除在行内） */
-$('#list').addEventListener('click', (e) => {
+dom.list.addEventListener('click', (e) => {
   const li = e.target.closest('.row');
   if (!li) return;
   const item = state.items.find((it) => it.el === li);
@@ -399,9 +442,9 @@ function requeueDone() {
 }
 
 function updateProgress(done, total, final = false) {
-  const wrap = $('#progressWrap');
-  const bar = $('#progressBar');
-  const text = $('#progressText');
+  const wrap = dom.progressWrap;
+  const bar = dom.progressBar;
+  const text = dom.progressText;
   wrap.hidden = total === 0;
   if (!total) return;
   const pct = Math.round((done / total) * 100);
@@ -415,9 +458,9 @@ function updateProgress(done, total, final = false) {
 function updateButtons() {
   const queued = state.items.filter((it) => it.status !== 'done').length;
   const cleaned = state.items.filter((it) => it.status === 'done').length;
-  const cleanBtn = $('#cleanBtn');
-  const zipBtn = $('#zipBtn');
-  const clearBtn = $('#clearBtn');
+  const cleanBtn = dom.cleanBtn;
+  const zipBtn = dom.zipBtn;
+  const clearBtn = dom.clearBtn;
   cleanBtn.disabled = state.processing || state.items.length === 0;
   cleanBtn.textContent = state.processing
     ? t('action.cleaning')
@@ -428,7 +471,7 @@ function updateButtons() {
 }
 
 function updateSummary() {
-  const box = $('#summary');
+  const box = dom.summary;
   const done = state.items.filter((it) => it.status === 'done');
   if (!done.length) { box.hidden = true; return; }
   let before = 0;
@@ -439,9 +482,9 @@ function updateSummary() {
     after += it.out.size;
     metas += (it.meta?.items || []).length;
   }
-  $('#sumFiles').textContent = String(done.length);
-  $('#sumMeta').textContent = String(metas);
-  $('#sumSize').textContent = fmtSigned(after - before);
+  dom.sumFiles.textContent = String(done.length);
+  dom.sumMeta.textContent = String(metas);
+  dom.sumSize.textContent = fmtSigned(after - before);
   box.hidden = false;
   revealAll(box); // 汇总卡出现时入场
 }
@@ -533,8 +576,6 @@ function bindDropzone() {
   });
 }
 
-// ---------------------------------------------------------------- 设置持久化
-
 // ---------------------------------------------------------------- 选项持久化
 
 function bindOptions() {
@@ -574,9 +615,7 @@ function bindOptions() {
 // ---------------------------------------------------------------- 终端日志窗口
 
 function bindConsole() {
-  const body = $('#logBody');
-  const empty = $('#logEmpty');
-  const count = $('#logCount');
+  const body = dom.logBody;
   const clearBtn = $('#logClear');
   const toggleBtn = $('#logToggle');
   const panel = $('#logPanel');
@@ -588,14 +627,12 @@ function bindConsole() {
       div.textContent = formatLine(line);
       body.appendChild(div);
     } else {
-      body.querySelectorAll('.log-line').forEach((el) => el.remove());
+      while (body.firstElementChild) body.firstElementChild.remove();
     }
-    // DOM 行数跟随环形缓冲裁剪
-    while (body.querySelectorAll('.log-line').length > lines.length) {
-      body.querySelector('.log-line')?.remove();
-    }
-    count.textContent = String(lines.length);
-    empty.hidden = lines.length > 0;
+    // DOM 行数跟随环形缓冲裁剪（只碰 DOM 引用，不再解析选择器）
+    while (body.children.length > lines.length) body.firstElementChild.remove();
+    dom.logCount.textContent = String(lines.length);
+    dom.logEmpty.hidden = lines.length > 0;
     // 用户停在底部附近才自动滚动，方便回看历史
     const nearBottom = body.scrollHeight - body.scrollTop - body.clientHeight < 60;
     if (nearBottom) body.scrollTop = body.scrollHeight;
@@ -622,7 +659,7 @@ function refreshConsoleLabels() {
 function boot() {
   setLang(detectLang());
   applyI18n();
-  startWaveBackground($('#bgCanvas'));
+  startWaveBackground(dom.bgCanvas);
   bindDropzone();
   bindOptions();
   bindConsole();
