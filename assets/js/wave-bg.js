@@ -214,6 +214,25 @@ export function startWaveBackground(canvas) {
   gl.uniform1f(uTime, 0);
   draw();
 
+  // 兜底重捕：视口尚未建立的环境（如刚创建、还没显示的标签页）首帧只能取到
+  // 0 尺寸，画布会被建成 1px 级，之后也不一定有 resize 事件来纠正。只要缓冲
+  // 相对视口仍是退化的，就按 500ms 节律继续重捕；尺寸一正常立即停止，正常
+  // 浏览器里最多多跑一次空转。重捕后补绘一帧：resize 会清空绘制缓冲，
+  // rAF 不回调的环境（个别内嵌 WebView）不能等下一帧。
+  let recaptureTries = 0;
+  const degenerate = () => {
+    const cssW = canvas.clientWidth || window.innerWidth || 0;
+    return cssW > 64 ? canvas.width < cssW * 0.5 : canvas.width < 64;
+  };
+  const recapture = () => {
+    if (stopped) return;
+    const before = canvas.width;
+    captureSize();
+    if (canvas.width !== before) draw();
+    if (degenerate() && ++recaptureTries < 30) setTimeout(recapture, 500);
+  };
+  setTimeout(recapture, 300);
+
   if (reduced) return { ok: true, stop() { stopped = true; } };
 
   raf = requestAnimationFrame(frame);

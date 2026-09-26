@@ -7,7 +7,7 @@
  * 全部在浏览器内完成，没有任何网络请求。
  */
 
-import { startWaveBackground } from './wave-bg.js?v=2';
+import { startWaveBackground } from './wave-bg.js?v=3';
 import { scanMetadata } from './metadata-scan.js';
 import { stripFileMeta } from './strip.js';
 import { createLogBus, formatLine } from './log.js';
