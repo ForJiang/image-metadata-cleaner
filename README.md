@@ -7,33 +7,33 @@
 [![No Build](https://img.shields.io/badge/build-none-success.svg)](index.html)
 [![Tests](https://img.shields.io/badge/tests-69%20passing-3ddc97.svg)](tests/test-all.mjs)
 
-English intro at the bottom → [English](#-english)
+English intro at the bottom → [English](#english)
 
 ---
 
-## ✨ 功能特性
+## 功能特性
 
 | | |
 | --- | --- |
-| 🧹 **真正的物理清除** | Canvas 重编码 + 编码后强制拆段，连 Safari 编码器自行写回的 ICC 色彩配置也一并移除，输出零元数据 |
-| 🖥️ **处理日志窗口** | 终端风格实时显示执行过程：`$ open` → 扫描发现的每个元数据段 → `decode` → `encode` → `strip` → `verify` → `done`，毫秒级时间戳，✓/✗ 分级配色 |
-| 🔍 **先扫描后清除** | 入队即扫描，逐项列出将移除的内容：EXIF（相机/时间/软件）、**GPS 坐标（精确到小数点后 5 位）**、内嵌缩略图、XMP、IPTC/Photoshop、ICC、注释段、PNG 文本块、EOI 后尾部隐藏数据 |
-| 📦 **批量与打包** | 拖入任意多张图片（支持整个文件夹拖入、Ctrl/⌘+V 粘贴），单文件下载或打包 ZIP 一次带走 |
-| 🎚️ **输出可控** | JPEG 质量滑块（0.6–1.0）、保持原格式 / 全部转 JPEG / 全部转 PNG、文件名可加 `_clean` 后缀；改了选项自动重新入队 |
-| ✅ **自检闭环** | 清除后对输出再次扫描，理论上残留为 0；UI 展示每项元数据的移除清单与体积变化 |
-| 🌐 **中英双语** | 跟随系统语言，可手动切换，移动端自适应 |
-| 🎬 **卡片入场动画** | 主面板、日志面板、FAQ、汇总统计随滚动淡入上移，滚动 / 缩放 / 横竖屏切换均触发；新入队的文件卡片按 45ms 错峰入场（上限 270ms），清除列表后重新入队会再次播放；全程只动 opacity/transform 并提升独立合成层，文字锐利不掉帧；`prefers-reduced-motion` 下自动静止，无 JS 时内容直接可见 |
-| 📱 **移动端稳定** | 背景画布尺寸稳定捕获（忽略地址栏收放带来的微小高度变化、resize 防抖）+ 独立合成层，滚动时背景钉住不滑不抖；毛玻璃效果按屏幕宽度降级，保证滚动流畅 |
-| 🔒 **隐私优先** | 无任何上传代码，断网也能用；无日志、无追踪 |
-| 🚀 **真正静态** | 无构建、无依赖安装，GitHub Pages 直接发布；自带 69 项单元测试 |
+| **真正的物理清除** | Canvas 重编码 + 编码后强制拆段，连 Safari 编码器自行写回的 ICC 色彩配置也一并移除，输出零元数据 |
+| **处理日志窗口** | 终端风格实时显示执行过程：`$ open` → 扫描发现的每个元数据段 → `decode` → `encode` → `strip` → `verify` → `done`，毫秒级时间戳，成功/失败分级配色 |
+| **先扫描后清除** | 入队即扫描，逐项列出将移除的内容：EXIF（相机/时间/软件）、**GPS 坐标（精确到小数点后 5 位）**、内嵌缩略图、XMP、IPTC/Photoshop、ICC、注释段、PNG 文本块、EOI 后尾部隐藏数据 |
+| **批量与打包** | 拖入任意多张图片（支持整个文件夹拖入、Ctrl/⌘+V 粘贴），单文件下载或打包 ZIP 一次带走 |
+| **输出可控** | JPEG 质量滑块（0.6–1.0）、保持原格式 / 全部转 JPEG / 全部转 PNG、文件名可加 `_clean` 后缀；改了选项自动重新入队 |
+| **自检闭环** | 清除后对输出再次扫描，理论上残留为 0；UI 展示每项元数据的移除清单与体积变化 |
+| **中英双语** | 跟随系统语言，可手动切换，移动端自适应 |
+| **卡片入场动画** | 主面板、日志面板、FAQ、汇总统计随滚动淡入上移，滚动 / 缩放 / 横竖屏切换均触发；新入队的文件卡片按 45ms 错峰入场（上限 270ms），清除列表后重新入队会再次播放；全程只动 opacity/transform 并提升独立合成层，文字锐利不掉帧；`prefers-reduced-motion` 下自动静止，无 JS 时内容直接可见 |
+| **移动端稳定** | 背景画布尺寸稳定捕获（忽略地址栏收放带来的微小高度变化、resize 防抖）+ 独立合成层，滚动时背景钉住不滑不抖；毛玻璃效果按屏幕宽度降级，保证滚动流畅 |
+| **隐私优先** | 无任何上传代码，断网也能用；无日志、无追踪 |
+| **真正静态** | 无构建、无依赖安装，GitHub Pages 直接发布；自带 69 项单元测试 |
 
-## 🖼️ 界面预览
+## 界面预览
 
 ![界面预览](docs/screenshot.png)
 
 深色玻璃面板 + WebGL 正弦波线条背景（原生 WebGL1 复刻 three.js `RawShaderMaterial` 效果，零第三方依赖，绘制缓冲按设备像素比渲染——retina 屏上亮线原生逐像素、边缘锐利，实测帧时间不达标时自动降到 1.5 档但绝不变糊；`prefers-reduced-motion` 下自动静止、页面隐藏时暂停渲染；移动端滚动时背景稳定，不随地址栏收放重排）。顶栏固定 60px 高，与 [rvc-sound-clone](https://forjiang.github.io/rvc-sound-clone/) 的排版规格一致。
 
-## 🧩 它是怎么工作的
+## 它是怎么工作的
 
 ```
 浏览器（纯静态站点）
@@ -56,7 +56,7 @@ English intro at the bottom → [English](#-english)
 | `assets/js/i18n.js` | 中英双语文案 |
 | `tests/test-all.mjs` | 69 项单元测试（合成带元数据的 JPEG/PNG/WebP 验证扫描与剥离，ZIP 用系统 `unzip` 与 Python `zipfile` 交叉验证，日志总线测格式化与环形缓冲，背景渲染倍率选择测试） |
 
-## 🚀 快速开始
+## 快速开始
 
 **在线使用**：<https://forjiang.github.io/image-metadata-cleaner/> —— 打开即用，无需安装。
 
@@ -73,7 +73,7 @@ python3 -m http.server 8931
 node tests/test-all.mjs   # 或 npm test
 ```
 
-## ❓ 常见问题
+## 常见问题
 
 **它会改变画质吗？** 通过 Canvas 重新编码完成：PNG 保持无损，JPEG 默认按 92% 质量重存（肉眼几乎不可辨）。追求完全无损时选「全部转 PNG」。
 
@@ -85,7 +85,7 @@ node tests/test-all.mjs   # 或 npm test
 
 ---
 
-## 🇬🇧 English
+## English
 
 **Image Meta Cleaner** — batch-strip the hidden data from your photos: EXIF camera model, capture time, GPS location, embedded thumbnails, editor traces, and data hidden after the image data. Fully client-side, zero uploads, zero dependencies.
 
@@ -100,6 +100,6 @@ node tests/test-all.mjs   # 或 npm test
 
 Every file is decoded with `createImageBitmap` (EXIF orientation baked in), re-encoded through a canvas — which carries pixels only, no metadata — then put through a second **hard strip pass** that physically removes any segment the encoder wrote back (e.g. Safari's ICC profile). The output is re-scanned as a self-check (expected: zero) and offered per-file or as a hand-rolled ZIP (store mode, CRC32 computed in-page).
 
-## 📄 License
+## License
 
 [MIT](LICENSE)
