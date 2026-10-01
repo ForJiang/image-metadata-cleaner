@@ -23,14 +23,14 @@
 <link rel="manifest" href="manifest.webmanifest" />
 <link rel="stylesheet" href="assets/css/style.css?v=8" />
 <!-- 模块预取：不等 app.js 解析完再发现依赖，头部解析期就把 8 个模块并行拉齐，缩短启动关键路径 -->
-<link rel="modulepreload" href="assets/js/app.js?v=4" />
+<link rel="modulepreload" href="assets/js/app.js?v=5" />
 <link rel="modulepreload" href="assets/js/wave-bg.js?v=3" />
 <link rel="modulepreload" href="assets/js/metadata-scan.js" />
 <link rel="modulepreload" href="assets/js/strip.js" />
 <link rel="modulepreload" href="assets/js/log.js" />
 <link rel="modulepreload" href="assets/js/reveal.js?v=3" />
 <link rel="modulepreload" href="assets/js/zip-writer.js" />
-<link rel="modulepreload" href="assets/js/i18n.js" />
+<link rel="modulepreload" href="assets/js/i18n.js?v=2" />
 </head>
 <body>
 
@@ -179,7 +179,7 @@
 
 <footer>
   <span data-i18n="footer.privacy">无服务器 · 无日志 · 无追踪</span>
-  <span><a href="https://github.com/ForJiang/image-metadata-cleaner" target="_blank" rel="noreferrer">GitHub</a> · <a href="https://github.com/ForJiang/image-metadata-cleaner/blob/main/LICENSE" target="_blank" rel="noreferrer">MIT License</a> · <span data-i18n="footer.made">用 HTML + Canvas 手工制作</span></span>
+  <span><a href="https://github.com/ForJiang/image-metadata-cleaner" target="_blank" rel="noreferrer">GitHub</a> · <a href="https://github.com/ForJiang/image-metadata-cleaner/blob/main/LICENSE" target="_blank" rel="noreferrer">MIT License</a> · <span data-i18n="footer.copy">© 2026 ForJiang</span></span>
 </footer>
 
 <div class="toasts" id="toasts" aria-live="polite"></div>
@@ -188,6 +188,6 @@
   <div style="text-align:center;padding:24px;color:#f2f3f6">本工具需要在浏览器中启用 JavaScript。</div>
 </noscript>
 
-<script type="module" src="assets/js/app.js?v=4"></script>
+<script type="module" src="assets/js/app.js?v=5"></script>
 </body>
 </html>

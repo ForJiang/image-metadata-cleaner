@@ -13,7 +13,7 @@ import { stripFileMeta } from './strip.js';
 import { createLogBus, formatLine } from './log.js';
 import { revealAll } from './reveal.js?v=3';
 import { createZip } from './zip-writer.js';
-import { t, applyI18n, getLang, setLang, detectLang } from './i18n.js';
+import { t, applyI18n, getLang, setLang, detectLang } from './i18n.js?v=2';
 
 const MAX_CANVAS_PIXELS = 268_000_000; // 主流浏览器画布面积上限（约 2^28 像素）
 const IMAGE_EXTS = ['jpg', 'jpeg', 'png', 'webp', 'bmp', 'gif', 'avif']; // 受支持的图片扩展名
