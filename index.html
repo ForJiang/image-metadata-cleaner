@@ -21,16 +21,16 @@
 <link rel="icon" type="image/png" href="assets/icon-16.png" sizes="16x16" />
 <link rel="apple-touch-icon" href="assets/icon-180.png" />
 <link rel="manifest" href="manifest.webmanifest" />
-<link rel="stylesheet" href="assets/css/style.css?v=8" />
+<link rel="stylesheet" href="assets/css/style.css?v=9" />
 <!-- 模块预取：不等 app.js 解析完再发现依赖，头部解析期就把 8 个模块并行拉齐，缩短启动关键路径 -->
-<link rel="modulepreload" href="assets/js/app.js?v=6" />
+<link rel="modulepreload" href="assets/js/app.js?v=7" />
 <link rel="modulepreload" href="assets/js/wave-bg.js?v=3" />
 <link rel="modulepreload" href="assets/js/metadata-scan.js?v=2" />
 <link rel="modulepreload" href="assets/js/strip.js?v=2" />
 <link rel="modulepreload" href="assets/js/log.js?v=2" />
 <link rel="modulepreload" href="assets/js/reveal.js?v=3" />
 <link rel="modulepreload" href="assets/js/zip-writer.js" />
-<link rel="modulepreload" href="assets/js/i18n.js?v=3" />
+<link rel="modulepreload" href="assets/js/i18n.js?v=4" />
 </head>
 <body>
 
@@ -55,20 +55,6 @@
   <section class="hero">
     <h1 data-i18n="hero.title">批量抹掉照片里的隐藏信息</h1>
     <p data-i18n="hero.sub">相机型号、拍摄时间、GPS 定位、内嵌缩略图、修图软件痕迹——全部在浏览器里清除，照片不会上传到任何服务器。</p>
-    <div class="hero-badges">
-      <span class="badge">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v5c0 4.6-3 8.4-7 10-4-1.6-7-5.4-7-10V6z"/><path d="M9.2 12.2l2 2 3.6-3.8"/></svg>
-        <span data-i18n="hero.badge.privacy">100% 本地处理</span>
-      </span>
-      <span class="badge">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2.5"/><circle cx="12" cy="12" r="3.4"/><path d="M8.5 5l1.2-2h4.6L15.5 5"/></svg>
-        <span data-i18n="hero.badge.formats">JPEG · PNG · WebP</span>
-      </span>
-      <span class="badge">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l2.7 5.6 6.1.8-4.5 4.2 1.2 6-5.5-3-5.5 3 1.2-6L3.2 9.4l6.1-.8z"/></svg>
-        <span data-i18n="hero.badge.oss">免费 · 开源 · 无广告</span>
-      </span>
-    </div>
   </section>
 
   <section class="panel" data-reveal>
@@ -188,6 +174,6 @@
   <div style="text-align:center;padding:24px;color:#f2f3f6">本工具需要在浏览器中启用 JavaScript。</div>
 </noscript>
 
-<script type="module" src="assets/js/app.js?v=6"></script>
+<script type="module" src="assets/js/app.js?v=7"></script>
 </body>
 </html>
