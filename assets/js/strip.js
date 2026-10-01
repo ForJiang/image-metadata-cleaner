@@ -13,7 +13,7 @@ function jpegMarkerNoLength(m) {
 }
 
 /** JPEG：丢弃所有 APPn（E0–EF）与 COM（FE）段，以及 EOI 之后的任何字节 */
-export function stripJpegMeta(bytes) {
+function stripJpegMeta(bytes) {
   try {
     const dv = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
     if (bytes.length < 4 || bytes[0] !== 0xff || bytes[1] !== 0xd8) return bytes;
@@ -53,7 +53,7 @@ export function stripJpegMeta(bytes) {
 }
 
 /** PNG：丢弃 tEXt / zTXt / iTXt / eXIf 文本与 EXIF 块，以及 IEND 之后的字节 */
-export function stripPngMeta(bytes) {
+function stripPngMeta(bytes) {
   try {
     const dv = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
     if (bytes.length < 8) return bytes;
@@ -79,7 +79,7 @@ export function stripPngMeta(bytes) {
 }
 
 /** WebP：丢弃 EXIF / XMP / ICCP 块并重算 RIFF 尺寸 */
-export function stripWebpMeta(bytes) {
+function stripWebpMeta(bytes) {
   try {
     const dv = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
     if (bytes.length < 12) return bytes;

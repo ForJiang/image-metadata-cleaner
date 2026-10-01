@@ -8,12 +8,12 @@
  */
 
 import { startWaveBackground } from './wave-bg.js?v=3';
-import { scanMetadata } from './metadata-scan.js';
-import { stripFileMeta } from './strip.js';
-import { createLogBus, formatLine } from './log.js';
+import { scanMetadata } from './metadata-scan.js?v=2';
+import { stripFileMeta } from './strip.js?v=2';
+import { createLogBus, formatLine } from './log.js?v=2';
 import { revealAll } from './reveal.js?v=3';
 import { createZip } from './zip-writer.js';
-import { t, applyI18n, getLang, setLang, detectLang } from './i18n.js?v=2';
+import { t, applyI18n, getLang, setLang, detectLang } from './i18n.js?v=3';
 
 const MAX_CANVAS_PIXELS = 268_000_000; // 主流浏览器画布面积上限（约 2^28 像素）
 const IMAGE_EXTS = ['jpg', 'jpeg', 'png', 'webp', 'bmp', 'gif', 'avif']; // 受支持的图片扩展名
@@ -55,6 +55,10 @@ const dom = {
   logBody: $('#logBody'),
   logEmpty: $('#logEmpty'),
   logCount: $('#logCount'),
+  logPanel: $('#logPanel'),
+  logToggle: $('#logToggle'),
+  logClear: $('#logClear'),
+  langBtn: $('#langBtn'),
   bgCanvas: $('#bgCanvas'),
 };
 
@@ -616,9 +620,9 @@ function bindOptions() {
 
 function bindConsole() {
   const body = dom.logBody;
-  const clearBtn = $('#logClear');
-  const toggleBtn = $('#logToggle');
-  const panel = $('#logPanel');
+  const clearBtn = dom.logClear;
+  const toggleBtn = dom.logToggle;
+  const panel = dom.logPanel;
 
   logBus.subscribe((line, lines) => {
     if (line) {
@@ -649,8 +653,8 @@ function bindConsole() {
 }
 
 function refreshConsoleLabels() {
-  const panel = $('#logPanel');
-  const toggleBtn = $('#logToggle');
+  const panel = dom.logPanel;
+  const toggleBtn = dom.logToggle;
   if (panel && toggleBtn) toggleBtn.textContent = panel.classList.contains('collapsed') ? t('log.expand') : t('log.collapse');
 }
 
@@ -670,10 +674,10 @@ function boot() {
 }
 
 function bindActions() {
-  $('#cleanBtn').addEventListener('click', cleanAll);
-  $('#zipBtn').addEventListener('click', downloadZip);
-  $('#clearBtn').addEventListener('click', clearAll);
-  $('#langBtn').addEventListener('click', () => {
+  dom.cleanBtn.addEventListener('click', cleanAll);
+  dom.zipBtn.addEventListener('click', downloadZip);
+  dom.clearBtn.addEventListener('click', clearAll);
+  dom.langBtn.addEventListener('click', () => {
     setLang(getLang() === 'zh' ? 'en' : 'zh');
     applyI18n();
     renderList();
@@ -684,7 +688,7 @@ function bindActions() {
 }
 
 function refreshLangButton() {
-  const btn = $('#langBtn');
+  const btn = dom.langBtn;
   btn.textContent = getLang() === 'zh' ? 'EN' : '中文';
   btn.title = getLang() === 'zh' ? 'Switch to English' : '切换到中文';
 }

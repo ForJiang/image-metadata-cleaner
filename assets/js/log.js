@@ -5,7 +5,7 @@
  * 可以直接在 Node 里测试；DOM 渲染留在 app.js。
  */
 
-export const LEVELS = ['cmd', 'info', 'ok', 'warn', 'err'];
+const LEVELS = ['cmd', 'info', 'ok', 'warn', 'err'];
 const MAX_LINES = 500;
 
 /** 生成一行日志：{level, text, detail, ts} */

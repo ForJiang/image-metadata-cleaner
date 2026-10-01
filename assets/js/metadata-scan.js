@@ -35,7 +35,7 @@ function startsWithAscii(bytes, off, str) {
  * @param {Uint8Array} bytes 完整文件缓冲区
  * @param {number} start TIFF 头（'II'/'MM'）所在偏移
  * @returns {{make?:string, model?:string, dateTime?:string, software?:string,
- *            gps?:string, thumbnail?:boolean, exifSubTags?:number} | null}
+ *            gps?:string, thumbnail?:boolean} | null}
  */
 function parseTiff(bytes, start) {
   try {
@@ -128,7 +128,6 @@ function parseTiff(bytes, start) {
     }
 
     const str = (map, tag) => (typeof map.get(tag) === 'string' && map.get(tag).trim() ? map.get(tag).trim() : undefined);
-    const num = (map, tag) => (typeof map.get(tag) === 'number' ? map.get(tag) : undefined);
 
     const make = str(tags0, 0x010f) || str(exifTags, 0xa433);
     const model = str(tags0, 0x0110) || str(exifTags, 0xa434);
@@ -139,8 +138,6 @@ function parseTiff(bytes, start) {
       make, model, dateTime, software,
       gps: gpsStr,
       thumbnail: r0.nextIfd > 0,
-      orientation: num(tags0, 0x0112),
-      exifTagCount: exifTags.size,
     };
   } catch {
     return null;
