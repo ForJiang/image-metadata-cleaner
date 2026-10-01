@@ -26,6 +26,7 @@ English intro at the bottom → [English](#english)
 | **移动端稳定** | 背景画布尺寸稳定捕获（忽略地址栏收放带来的微小高度变化、resize 防抖）+ 独立合成层，滚动时背景钉住不滑不抖；毛玻璃效果按屏幕宽度降级，保证滚动流畅 |
 | **隐私优先** | 无任何上传代码，断网也能用；无日志、无追踪 |
 | **真正静态** | 无构建、无依赖安装，GitHub Pages 直接发布；自带 69 项单元测试 |
+| **轻量秒开** | 全站首屏 9 个请求、gzip 后约 32KB：无 webfont、无外部 CDN；8 个 JS 模块用 `modulepreload` 在头部解析期并行预取，不必等入口解析完再逐个发现依赖 |
 
 ## 界面预览
 
@@ -47,6 +48,7 @@ English intro at the bottom → [English](#english)
 
 | 模块 | 职责 |
 | --- | --- |
+| `assets/js/app.js` | 主逻辑：入队/扫描/重编码/下载/ZIP、队列渲染（增量渲染，行与数据绑定，已解码缩略图跨渲染保留，热路径 DOM 引用缓存）、选项持久化、日志窗口 |
 | `assets/js/metadata-scan.js` | JPEG 段遍历 + TIFF/EXIF 解析（含 GPS DMS→十进制换算）、PNG 块解析、WebP chunk 解析 |
 | `assets/js/strip.js` | 编码后强制拆段：JPEG 去 APPn/COM/尾部、PNG 去 tEXt/zTXt/iTXt/eXIf、WebP 去 EXIF/XMP/ICCP |
 | `assets/js/zip-writer.js` | 极简 ZIP（store 模式），UTF-8 文件名 |
@@ -95,6 +97,7 @@ node tests/test-all.mjs   # 或 npm test
 - **Mobile**: responsive layout; the WebGL background stays pinned while scrolling (stable canvas sizing ignores URL-bar height changes), and blur effects degrade gracefully on small screens.
 - **Entrance animations**: the main panel, process log, FAQ and summary stats fade in as you scroll; newly queued file cards stagger in 45ms apart. Only opacity/transform are animated, on their own composited layers, so text stays sharp mid-flight. Everything falls back to visible-without-JS, and `prefers-reduced-motion` keeps the page still.
 - **Rendering**: the WebGL background draws at native device resolution (capped at 2×), stepping down to 1.5× only if measured frame time exceeds budget — never softer than a plain 1.5× render, just sharper on retina screens.
+- **Loading**: 9 requests and roughly 32KB gzipped on first paint — no build, no dependencies, no webfonts. All 8 JS modules are `modulepreload`ed, so they fetch in parallel while the head is still parsing instead of being discovered one by one after the entry module.
 
 ### How it works
 
