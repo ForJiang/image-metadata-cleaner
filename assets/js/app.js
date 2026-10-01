@@ -16,7 +16,7 @@ import { createZip } from './zip-writer.js';
 import { t, applyI18n, getLang, setLang, detectLang } from './i18n.js';
 
 const MAX_CANVAS_PIXELS = 268_000_000; // 主流浏览器画布面积上限（约 2^28 像素）
-const ACCEPTED = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/bmp', 'image/gif', 'image/avif'];
+const IMAGE_EXTS = ['jpg', 'jpeg', 'png', 'webp', 'bmp', 'gif', 'avif']; // 受支持的图片扩展名
 const EXT_BY_MIME = { 'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp' };
 
 const state = {
@@ -88,7 +88,7 @@ function extOf(name) {
 
 function isAcceptable(file) {
   if (file.type && file.type.startsWith('image/') && file.type !== 'image/svg+xml') return true;
-  return ['jpg', 'jpeg', 'png', 'webp', 'bmp', 'gif', 'avif'].includes(extOf(file.name));
+  return IMAGE_EXTS.includes(extOf(file.name));
 }
 
 function addFiles(fileList) {
