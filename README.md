@@ -58,6 +58,8 @@ English intro at the bottom → [English](#english)
 | `assets/js/i18n.js` | 中英双语文案 |
 | `tests/test-all.mjs` | 69 项单元测试（合成带元数据的 JPEG/PNG/WebP 验证扫描与剥离，ZIP 用系统 `unzip` 与 Python `zipfile` 交叉验证，日志总线测格式化与环形缓冲，背景渲染倍率选择测试） |
 
+**维护约定**：模块内容一变，必须同步提升 `index.html` 里该模块的 `?v=N`（`<script>` 入口与 `modulepreload` 链接都要改）——URL 不变时浏览器会整份吃缓存，改了的代码到不了用户那里，这个坑本项目踩过两次。
+
 ## 快速开始
 
 **在线使用**：<https://forjiang.github.io/image-metadata-cleaner/> —— 打开即用，无需安装。
