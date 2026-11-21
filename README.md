@@ -1,11 +1,11 @@
 # Image Meta Cleaner · 图片元数据清除器
 
-> 批量抹掉照片里的隐藏信息——EXIF 相机型号、拍摄时间、GPS 定位、内嵌缩略图、修图软件痕迹、文件尾部隐藏数据。**纯静态部署，全部处理在浏览器里完成，照片不上传任何服务器。**
+> 批量清除照片 EXIF/GPS 等元数据，纯浏览器本地处理
 >
-> Batch-strip EXIF / GPS / XMP / IPTC / ICC and trailing hidden data — Canvas re-encode + post-encode stripping, re-verified zero metadata; 100% in-browser, nothing uploaded, bilingual, 69 unit tests, zero dependencies
+> Batch-remove EXIF/GPS metadata from photos, 100% in-browser
 
 [![GitHub Pages](https://img.shields.io/badge/GitHub%20Pages-在线-3ddc97.svg)](https://forjiang.github.io/image-metadata-cleaner/)
-[![License: MIT](https://img.shields.io/badge/License%20MIT-d8d8ff.svg)](LICENSE)
+[![License: GPL-3.0](https://img.shields.io/badge/License-GPL--3.0-d8d8ff.svg)](LICENSE)
 [![No Build](https://img.shields.io/badge/build-none-success.svg)](index.html)
 [![Tests](https://img.shields.io/badge/tests-69%20passing-3ddc97.svg)](tests/test-all.mjs)
 
@@ -109,4 +109,4 @@ Every file is decoded with `createImageBitmap` (EXIF orientation baked in), re-e
 
 ## License
 
-[MIT](LICENSE)
+[GPL-3.0](LICENSE) © 2026 ForJiang
